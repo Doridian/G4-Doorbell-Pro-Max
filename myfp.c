@@ -35,23 +35,22 @@ int on_event(bmkt_finger_event_t *event, void *cb_ctx) {
 int main() {
     printf("Initializing BMKT...\n");
 
-    spi_transport_info_t spi_transport_info;
-    spi_transport_info.addr = 1;
-    spi_transport_info.subaddr = 1;
-    spi_transport_info.speed = 4000000;
-    spi_transport_info.bpw = 8;
-    spi_transport_info.mode = 0;
-    spi_transport_info.unk1 = 0x44;
-    spi_transport_info.unk2 = 0x01;
-    spi_transport_info.unk3 = 0x00;
-    spi_transport_info.gpio_unk4 = 0x00;
-    spi_transport_info.gpio_number = 0x45;
-    spi_transport_info.unk5 = 0x02;
-    spi_transport_info.unk6 = 0x00;
-
     bmkt_sensor_t sensor;
     sensor.type = 0;
-    sensor.info = spi_transport_info;
+    sensor.info.mode = 0;
+    sensor.info.unk3 = 0;
+    sensor.info.unk4 = 0;
+    sensor.info.unk5 = 0x45;
+    sensor.info.gpio_number = 0;
+    sensor.info.speed = 4000000;
+    sensor.info.bpw = 8;
+    sensor.info.unk6 = 2;
+    sensor.info.unk7 = 0;
+    sensor.info.addr = 1;
+    sensor.info.subaddr = 1;
+    sensor.info.unk1 = 0x44;
+    sensor.info.unk2 = 1;
+    sensor.info.unk8 = 0;
 
     bmkt_ctx_t* session;
     BMKT_WRAP(bmkt_init(&session));

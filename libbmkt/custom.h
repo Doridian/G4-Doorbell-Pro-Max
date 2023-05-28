@@ -29,7 +29,7 @@ typedef int (*bmkt_resp_cb_t)(bmkt_response_t *resp, void *cb_ctx);
 typedef int (*bmkt_event_cb_t)(bmkt_finger_event_t *event, void *cb_ctx);
 typedef int (*bmkt_general_error_cb_t)(uint16_t error, void *cb_ctx);
 
-typedef struct __attribute__((__packed__)) bmkt_sensor_version
+typedef struct bmkt_sensor_version
 {
 	uint32_t build_time;
 	uint32_t build_num;
@@ -47,14 +47,14 @@ typedef struct __attribute__((__packed__)) bmkt_sensor_version
 	uint8_t device_type;
 } bmkt_sensor_version_t;
 
-typedef struct __attribute__((__packed__)) bmkt_session_ctx
+typedef struct bmkt_session_ctx
 {
 	uint8_t seq_num;
 	bmkt_resp_cb_t resp_cb;
 	void *cb_ctx;
 } bmkt_session_ctx_t;
 
-typedef struct  __attribute__((__packed__)) spi_transport_info {
+typedef struct spi_transport_info {
     uint32_t mode;
     uint32_t speed;
     uint32_t bpw;
@@ -63,13 +63,15 @@ typedef struct  __attribute__((__packed__)) spi_transport_info {
     uint32_t unk1;
     uint32_t unk2;
     uint32_t unk3;
-    uint32_t gpio_unk4;
+    uint32_t unk4;
+    uint32_t unk5;
     uint64_t gpio_number;
-    uint64_t unk5;
-    uint32_t unk6;
+    uint64_t unk6;
+    uint32_t unk7;
+    uint32_t unk8;
 } spi_transport_info_t;
 
-typedef struct  __attribute__((__packed__)) bmkt_sensor {
+typedef struct bmkt_sensor {
     uint32_t type;
     spi_transport_info_t info;
 
