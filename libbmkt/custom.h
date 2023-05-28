@@ -65,10 +65,10 @@ typedef struct spi_transport_info {
     uint32_t unk3;
     uint32_t unk4;
     uint32_t unk5;
-    uint64_t gpio_number;
     uint64_t unk6;
-    uint32_t unk7;
+    uint64_t unk7;
     uint32_t unk8;
+    uint32_t unk9;
 } spi_transport_info_t;
 
 typedef struct bmkt_sensor {

@@ -38,19 +38,25 @@ int main() {
     bmkt_sensor_t sensor;
     sensor.type = 0;
     sensor.info.mode = 0;
-    sensor.info.unk3 = 0;
-    sensor.info.unk4 = 0;
-    sensor.info.unk5 = 0x45;
-    sensor.info.gpio_number = 0;
     sensor.info.speed = 4000000;
     sensor.info.bpw = 8;
-    sensor.info.unk6 = 2;
-    sensor.info.unk7 = 0;
     sensor.info.addr = 1;
     sensor.info.subaddr = 1;
+
+    // Seems to be GPIO
     sensor.info.unk1 = 0x44;
     sensor.info.unk2 = 1;
+    sensor.info.unk3 = 0;
+    sensor.info.unk4 = 0;
+
+    // Seems to be GPIO
+    sensor.info.unk5 = 0x45;
+    sensor.info.unk6 = 0;
+    sensor.info.unk7 = 2;
     sensor.info.unk8 = 0;
+
+    // No idea, might just be padding
+    sensor.info.unk9 = 0;
 
     bmkt_ctx_t* session;
     BMKT_WRAP(bmkt_init(&session));
