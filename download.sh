@@ -8,6 +8,7 @@ API_LATEST_URL='https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~produc
 
 BIN_URL="$(curl -s -f "$API_LATEST_URL" | jq -r ._embedded.firmware[0]._links.data.href)"
 
+mkdir -p fwdownload
 # TODO: Use unifi's filename
 BIN_NAME="fwdownload/firmware.bin"
 
@@ -18,4 +19,5 @@ then
     mkdir -p fwimage
     ubireader_extract_files "$BIN_NAME" -o fwimage
     mv fwimage/*/rootfs fwimage/rootfs
+    rmdir fwimage/*
 fi
