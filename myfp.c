@@ -63,8 +63,10 @@ int main() {
         usleep(10);
     }
     BMKT_WRAP(bmkt_init_fps_ret);
+    // TODO: Wait for init_fps ok response
     sleep(1);
     BMKT_WRAP(bmkt_identify(session));
+    // TODO: Actually do something lol
     sleep(1);
 
     printf("BMKT initialized!\n");
