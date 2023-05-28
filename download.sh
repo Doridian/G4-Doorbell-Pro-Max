@@ -8,6 +8,7 @@ API_LATEST_URL='https://fw-update.ubnt.com/api/firmware-latest?filter=eq~~produc
 
 BIN_URL="$(curl -s -f "$API_LATEST_URL" | jq -r ._embedded.firmware[0]._links.data.href)"
 
+# TODO: Use unifi's filename
 BIN_NAME="fwdownload/firmware.bin"
 
 if [ ! -f "$BIN_NAME" ]
