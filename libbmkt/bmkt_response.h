@@ -454,22 +454,12 @@ typedef struct bmkt_enrolled_fingers_resp
 } bmkt_enrolled_fingers_resp_t;
 
 /**
- * bmkt_finger_state_t:
- * Finger state representation values.
- */
-typedef enum {
-  BMKT_FINGER_STATE_UNKNOWN    = 0,
-  BMKT_FINGER_STATE_ON_SENSOR,
-  BMKT_FINGER_STATE_NOT_ON_SENSOR,
-} bmkt_finger_state_t;
-
-/**
  * bmkt_finger_event_t:
  * Structure containing finger state
  */
 typedef struct bmkt_finger_event
 {
-  bmkt_finger_state_t finger_state;
+  int finger_state;
 } bmkt_finger_event_t;
 
 /**

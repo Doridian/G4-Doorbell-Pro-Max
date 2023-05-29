@@ -7,7 +7,7 @@ if [ "$(uname -m)" = "aarch64" ]; then
 fi
 
 runcc() {
-    $CC -O3 -nodefaultlibs -L/fw/image/rootfs/lib "$@" /fw/image/rootfs/lib/libc.so.6 /fw/image/rootfs/lib/ld-2.23.so -fno-stack-protector
+    $CC -O3 -Wall -Werror -nodefaultlibs -L/fw/image/rootfs/lib "$@" /fw/image/rootfs/lib/libc.so.6 /fw/image/rootfs/lib/ld-2.23.so -fno-stack-protector
 }
 
 mkdir -p ./dist/bin ./dist/lib

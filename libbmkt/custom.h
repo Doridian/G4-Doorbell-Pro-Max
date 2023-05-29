@@ -120,3 +120,4 @@ int bmkt_enroll(bmkt_ctx_t* session, const uint8_t* user_id,  uint32_t user_id_l
 
 int bmkt_close(bmkt_ctx_t* session);
 int bmkt_exit(bmkt_ctx_t* session);
+int bmkt_cancel_op(bmkt_ctx_t* session);
