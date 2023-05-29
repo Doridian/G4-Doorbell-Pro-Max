@@ -6,9 +6,14 @@ package main
 import "C"
 
 import (
+	"github.com/Doridian/G4-Doorbell-Pro-Max/util/bmkt"
 	"log"
 )
 
 func main() {
-	log.Printf("%v", C.bmkt_init)
+	bmktCtx, err := bmkt.Open()
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("%v", bmktCtx)
 }
