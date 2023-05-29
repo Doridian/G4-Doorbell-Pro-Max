@@ -15,5 +15,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = bmktCtx.Initialize()
+	if err != nil {
+		panic(err)
+	}
+
 	log.Printf("%v", bmktCtx)
 }
