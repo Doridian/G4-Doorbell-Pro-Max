@@ -10,7 +10,9 @@
 
 // Parts of these are from synaptics libfprint fork or libfprint itself
 
-#define bmkt_ctx_t void
+typedef struct bmkt_ctx {
+    // Unnknown!
+} bmkt_ctx_t;
 
 typedef enum bmkt_sensor_state {
     BMKT_SENSOR_STATE_UNINIT = 0,
