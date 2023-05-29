@@ -9,7 +9,7 @@ import (
 )
 
 type BMKTContext struct {
-	ctx interface{}
+	ctx *C.cb_ctx_t
 }
 
 const IF_STATE_INVALID = -1
