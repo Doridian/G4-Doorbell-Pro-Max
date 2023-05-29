@@ -15,7 +15,8 @@ fi
 export CC="$REAL_CC"
 export CC_FOR_TARGET="$REAL_CC"
 
-export LDFLAGS="-g -O2 -L/fw/image/rootfs/lib /fw/image/rootfs/lib/libc.so.6 /fw/image/rootfs/lib/ld-linux-aarch64.so.1 /fw/image/rootfs/lib/libpthread.so.0"
+export CFLAGS="-g -O2 -I/src/include"
+export LDFLAGS="$CFLAGS -L/fw/image/rootfs/lib /fw/image/rootfs/lib/libc.so.6 /fw/image/rootfs/lib/ld-linux-aarch64.so.1 /fw/image/rootfs/lib/libpthread.so.0"
 
 runcc() {
     $CC_FOR_TARGET -Wall -Werror -nodefaultlibs $LDFLAGS "$@" -fno-stack-protector
@@ -23,6 +24,7 @@ runcc() {
 #runcc mynfc.c -o ./dist/bin/mynfc -lnxp-nfc
 #runcc myfp.c -o ./dist/bin/myfp -lbmkt
 
+export CGO_CFLAGS="$CFLAGS"
 export CGO_LDFLAGS="$LDFLAGS"
 export GOOS=linux
 export GOARCH=arm64

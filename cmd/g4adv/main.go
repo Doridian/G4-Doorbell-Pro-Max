@@ -1,7 +1,7 @@
 package main
 
-// #include "../../libbmkt/bmkt.h"
-// #include "../../libbmkt/custom.h"
+// #include <libbmkt/bmkt.h>
+// #include <libbmkt/custom.h>
 // #cgo LDFLAGS: -lnxp-nfc -lbmkt
 import "C"
 

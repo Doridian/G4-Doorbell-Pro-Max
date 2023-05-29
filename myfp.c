@@ -6,8 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "libbmkt/bmkt.h"
-#include "libbmkt/custom.h"
+#include <libbmkt/bmkt.h>
+#include <libbmkt/custom.h>
 
 #define BMKT_WRAP(FUNC, session) { \
         int res = FUNC; \

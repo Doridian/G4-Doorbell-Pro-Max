@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "NfcLibrary/inc/Nfc.h"
+#include <NfcLibrary/inc/Nfc.h>
 
 static unsigned char discoveryTechnologies[] = {
     MODE_POLL | TECH_PASSIVE_NFCA,
