@@ -9,5 +9,6 @@ copycam() {
     cat "dist/bin/$1" | ssh ubnt@camera-front-door.foxden.network "rm -f '/var/$1' && echo Loading... && cat /dev/stdin > '/var/$1' && echo CHMod && chmod 755 '/var/$1'"
 }
 
-copycam myfp
-copycam mynfc
+#copycam myfp
+#copycam mynfc
+copycam g4adv

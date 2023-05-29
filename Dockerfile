@@ -7,6 +7,7 @@ RUN apt update && \
         wget \
         jq \
         python3-pip \
+        golang-go \
     && pip install ubi_reader
 
 RUN [ "$(uname -m)" = "aarch64" ] && apt install -y gcc || apt install -y gcc-aarch64-linux-gnu
@@ -16,8 +17,8 @@ COPY /docker/download.sh /docker/download.sh
 RUN /docker/download.sh
 COPY docker /docker
 
-RUN mkdir -p /src && groupadd -g 1000 user && useradd -u 1000 -g 1000 user
+RUN mkdir -p /src /home/user && groupadd -g 1000 user && useradd -u 1000 -g 1000 user
 WORKDIR /src
 VOLUME /src
-RUN chown 1000:1000 /src
+RUN chown 1000:1000 /src /home/user
 USER 1000:1000

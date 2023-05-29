@@ -57,6 +57,7 @@ void run_bmkt_identify(cb_ctx_t* ctx) {
 void run_bmkt_enroll(cb_ctx_t* ctx, const char* user_id, int finger_id) {
     bmkt_cancel_if_running(ctx);
     ctx->state = IF_STATE_ENROLLING;
+    BMKT_WRAP(bmkt_delete_enrolled_user(ctx->session, finger_id, (const uint8_t*)user_id, strlen(user_id)), ctx->session);
     BMKT_WRAP(bmkt_enroll(ctx->session, (const uint8_t*)user_id, strlen(user_id), finger_id), ctx->session);
 }
 
