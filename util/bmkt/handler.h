@@ -31,6 +31,12 @@ int on_error(uint16_t error, void* cb_ctx_void) {
 }
 
 static void bmkt_main_close(cb_ctx_t* ctx) {
+    if (ctx->session) {
+        bmkt_session_ctx_t* session = ctx->session;
+        ctx->session = NULL;
+        bmkt_close(session);
+        bmkt_exit(session);
+    }
     free(ctx);
 }
 

@@ -29,3 +29,12 @@ func Open() (*BMKTContext, error) {
 		ctx: ctxPtr,
 	}, nil
 }
+
+func (c *BMKTContext) Close() {
+	if c.ctx == nil {
+		return
+	}
+	ctx := c.ctx
+	c.ctx = nil
+	C.bmkt_main_close(ctx)
+}
