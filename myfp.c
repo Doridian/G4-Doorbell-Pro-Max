@@ -39,6 +39,8 @@ void on_enroll_progress(int percent) {
     printf("Enrollment progress %d %%\n", percent);
 }
 
+uint8_t do_run_identify = 0;
+
 int on_response(bmkt_response_t* resp, void* cb_ctx) {
     switch (resp->response_id) {
         // Events
@@ -48,8 +50,8 @@ int on_response(bmkt_response_t* resp, void* cb_ctx) {
                     printf("Finger removed from sensor!\n");
                     break;
                 case BMKT_EVT_FINGER_STATE_ON_SENSOR:
-                    printf("Finger placed on sensor, running identify!\n");
-                    run_bmkt_identify((bmkt_ctx_t*)cb_ctx);
+                    printf("Finger placed on sensor!\n");
+                    do_run_identify = 1;
                     break;
             }
             break;
@@ -155,9 +157,15 @@ int main() {
     printf("BMKT initialized!\n");
 
     //BMKT_WRAP(bmkt_identify(session));
+    //BMKT_WRAP(bmkt_delete_enrolled_user(session, 1, "doridian\0", strlen("doridian")));
     //BMKT_WRAP(bmkt_enroll(session, "doridian\0", strlen("doridian"), 1));
     while (1) {
-        sleep(1);
+        if (do_run_identify) {
+            do_run_identify = 0;
+            sleep(1);
+            BMKT_WRAP(bmkt_identify(session));
+        }
+        usleep(10 * 1000);
     }
 
     exit_program(session, 0);

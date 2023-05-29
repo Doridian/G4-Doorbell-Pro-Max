@@ -115,6 +115,7 @@ int bmkt_open(bmkt_ctx_t* session, bmkt_sensor_t* sensor, bmkt_ctx_t** session_o
 int bmkt_init_fps(bmkt_ctx_t* session);
 
 int bmkt_identify(bmkt_ctx_t* session);
+int bmkt_delete_enrolled_user(bmkt_ctx_t* session, uint8_t finger_id, const uint8_t* user_id,  uint32_t user_id_len);
 int bmkt_enroll(bmkt_ctx_t* session, const uint8_t* user_id,  uint32_t user_id_len, uint8_t finger_id);
 
 int bmkt_close(bmkt_ctx_t* session);
