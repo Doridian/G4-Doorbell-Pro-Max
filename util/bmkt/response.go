@@ -1,6 +1,5 @@
 package bmkt
 
-// #include <string.h>
 // #include <libbmkt/custom.h>
 import "C"
 import "unsafe"
@@ -24,13 +23,6 @@ func (c *BMKTContext) handleResponseError(resp *C.bmkt_response_t, op string) {
 
 func (c *BMKTContext) handleEnrollProgress(progress int) {
 	log.Printf("Enroll progress %d %%", progress)
-}
-
-func convertCUserIDToString(c_user_id *C.user_id_t) string {
-	c_user_id_charptr := (*C.char)(unsafe.Pointer(c_user_id))
-	len := C.strnlen(c_user_id_charptr, C.BMKT_MAX_USER_ID_LEN)
-	str := C.GoStringN(c_user_id_charptr, C.int(len))
-	return str
 }
 
 func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
