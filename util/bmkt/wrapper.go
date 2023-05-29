@@ -2,7 +2,6 @@ package bmkt
 
 // #include <libbmkt/custom.h>
 // #include "wrapper.h"
-// #cgo LDFLAGS: -lbmkt
 import "C"
 
 import (

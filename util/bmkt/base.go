@@ -1,6 +1,7 @@
 package bmkt
 
 // #include <libbmkt/custom.h>
+// #cgo LDFLAGS: -lbmkt
 import "C"
 import (
 	"sync/atomic"
