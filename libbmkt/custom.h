@@ -82,20 +82,24 @@ typedef enum {
     SPI_MODE_3 = (SPI_CPOL|SPI_CPHA),
 } spi_mode_t;
 
+typedef enum {
+    SENSOR_TRANSPORT_SPI = 0
+} sensor_transport_t;
+
 typedef struct spi_transport_info {
     spi_mode_t mode;
     int speed;
     int bpw;
     int addr;
     int subaddr;
-    gpio_transport_info_t pin1;
-    gpio_transport_info_t pin2;
+    gpio_transport_info_t pin_out;
+    gpio_transport_info_t pin_in;
     int unknown_padding;
 } spi_transport_info_t;
 
 typedef struct bmkt_sensor {
-    int type;
-    spi_transport_info_t info;
+    sensor_transport_t transport_type;
+    spi_transport_info_t transport_info;
 
     bmkt_sensor_version_t version;
     bmkt_session_ctx_t pending_sessions[BMKT_MAX_PENDING_SESSIONS];

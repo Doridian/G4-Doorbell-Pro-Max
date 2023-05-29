@@ -34,6 +34,7 @@ typedef enum {
     IF_STATE_VERIFYING,
     IF_STATE_IDENTIFYING,
     IF_STATE_CANCELLING,
+    IF_STATE_DELETING_ALL,
 } cb_ctx_state_t; 
 
 typedef struct cb_ctx_struct {
@@ -63,6 +64,12 @@ void on_enroll_progress(int percent) {
     printf("Enrollment progress %d %%\n", percent);
 }
 
+void on_response_error(bmkt_response_t* resp, cb_ctx_t* ctx, const char* call_type) {
+    ctx->state = IF_STATE_IDLE;
+    int code = resp->result;
+    printf("%s error (%d)\n", call_type, code);
+}
+
 // IDENTIFY/VERIFY/ENROLL CANNOT BE RUN AFTER FINGER IS ALREADY ON SENSOR!
 int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
     cb_ctx_t* ctx = (cb_ctx_t*)cb_ctx_void;
@@ -84,10 +91,6 @@ int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
             break;
 
         // Init
-        case BMKT_RSP_FPS_INIT_FAIL:
-            printf("Init FAIL!\nBailing...\n");
-            exit(1);
-            break;
         case BMKT_RSP_FPS_INIT_OK:
             ctx->state = IF_STATE_IDLE;
             printf("Init OK!\n");
@@ -95,19 +98,23 @@ int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
                 run_bmkt_identify(ctx);
             }
             break;
+        case BMKT_RSP_FPS_INIT_FAIL:
+            on_response_error(resp, ctx, "Init");
+            exit_program(ctx, 1);
+            break;
 
         // Enrollment
         case BMKT_RSP_ENROLL_READY:
             ctx->state = IF_STATE_ENROLLING;
             on_enroll_progress(0);
             break;
-        case BMKT_RSP_ENROLL_FAIL:
-            ctx->state = IF_STATE_IDLE;
-            on_enroll_progress(-1);
-            break;
         case BMKT_RSP_ENROLL_OK:
             ctx->state = IF_STATE_IDLE;
             on_enroll_progress(100);
+            break;
+        case BMKT_RSP_ENROLL_FAIL:
+            on_response_error(resp, ctx, "Enroll");
+            on_enroll_progress(-1);
             break;
         case BMKT_RSP_ENROLL_REPORT:
             ctx->state = IF_STATE_ENROLLING;
@@ -125,8 +132,7 @@ int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
             printf("Verify OK! You are %s finger %d\n", resp->response.verify_resp.user_id, resp->response.verify_resp.finger_id);
             break;
         case BMKT_RSP_VERIFY_FAIL:
-            ctx->state = IF_STATE_IDLE;
-            printf("Verify FAIL!\n");
+            on_response_error(resp, ctx, "Verify");
             break;
 
         // Identify / id_resp
@@ -140,17 +146,37 @@ int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
             printf("Identify OK! You are %s finger %d\n", resp->response.id_resp.user_id, resp->response.id_resp.finger_id);
             break;
         case BMKT_RSP_ID_FAIL:
-            ctx->state = IF_STATE_IDLE;
-            printf("Identify FAIL!\n");
+            on_response_error(resp, ctx, "Identify");
             break;
 
+        // Op cancalltion
         case BMKT_RSP_CANCEL_OP_OK:
             ctx->state = IF_STATE_IDLE;
-            printf("Canellation OK!\n");
+            printf("Cancel OK!\n");
             break;
         case BMKT_RSP_CANCEL_OP_FAIL:
-            printf("Cancellation FAIL!\nBailing...\n");
-            exit(1);
+            on_response_error(resp, ctx, "Cancel");
+            exit_program(ctx->session, 1);
+            break;
+
+        // Deletion
+        case BMKT_RSP_DELETE_PROGRESS:
+            ctx->state = IF_STATE_DELETING_ALL;
+            printf("Delete all progress %d\n", resp->response.del_all_user_resp.progress);
+            break;
+        case BMKT_RSP_DEL_FULL_DB_OK:
+            ctx->state = IF_STATE_IDLE;
+            printf("Delete all OK!\n");
+            break;
+        case BMKT_RSP_DEL_FULL_DB_FAIL:
+            on_response_error(resp, ctx, "Delete all");
+            break;
+        case BMKT_RSP_DEL_USER_FP_OK:
+            ctx->state = IF_STATE_IDLE;
+            printf("Delete user OK!\n");
+            break;
+        case BMKT_RSP_DEL_USER_FP_FAIL:
+            on_response_error(resp, ctx, "Delete user");
             break;
 
         // Unhandled
@@ -172,47 +198,47 @@ int main() {
 
     bmkt_sensor_t sensor;
     // Type 0 means SPI in this library
-    sensor.type = 0;
+    sensor.transport_type = SENSOR_TRANSPORT_SPI;
 
     // SPI settings
-    sensor.info.addr = 1;
-    sensor.info.subaddr = 1;
-    sensor.info.mode = SPI_MODE_0;
-    sensor.info.speed = 4000000;
-    sensor.info.bpw = 8;
+    sensor.transport_info.addr = 1;
+    sensor.transport_info.subaddr = 1;
+    sensor.transport_info.mode = SPI_MODE_0;
+    sensor.transport_info.speed = 4000000;
+    sensor.transport_info.bpw = 8;
 
     // GPIO pin information
-    sensor.info.pin1.pin = 68;
-    sensor.info.pin1.direction = GPIO_DIRECTION_OUT;
-    sensor.info.pin1.edge = GPIO_EDGE_NONE;
-    sensor.info.pin1.active_low = 0;
+    sensor.transport_info.pin_out.pin = 68;
+    sensor.transport_info.pin_out.direction = GPIO_DIRECTION_OUT;
+    sensor.transport_info.pin_out.edge = GPIO_EDGE_NONE;
+    sensor.transport_info.pin_out.active_low = 0;
 
-    sensor.info.pin2.pin = 69;
-    sensor.info.pin2.direction = GPIO_DIRECTION_IN;
-    sensor.info.pin2.edge = GPIO_EDGE_RISING;
-    sensor.info.pin2.active_low = 0;
+    sensor.transport_info.pin_in.pin = 69;
+    sensor.transport_info.pin_in.direction = GPIO_DIRECTION_IN;
+    sensor.transport_info.pin_in.edge = GPIO_EDGE_RISING;
+    sensor.transport_info.pin_in.active_low = 0;
 
     // No idea, might just be padding
-    sensor.info.unknown_padding = 0;
+    sensor.transport_info.unknown_padding = 0;
 
     bmkt_ctx_t* session;
+    bmkt_ctx_t* session_out;
 
     BMKT_WRAP(bmkt_init(&session), session);
     cb_ctx_t ctx;
     ctx.session = session;
     ctx.state = IF_STATE_INIT;
-    BMKT_WRAP(bmkt_open(session, &sensor, &session, &on_response, &ctx, &on_error, &ctx), session);
+    BMKT_WRAP(bmkt_open(session, &sensor, &session_out, &on_response, &ctx, &on_error, &ctx), session);
 
-    sleep(1);
     int bmkt_init_fps_ret;
-    while ((bmkt_init_fps_ret = bmkt_init_fps(session)) == BMKT_SENSOR_NOT_READY) {
-        usleep(10);
-    }
+    do  {
+        usleep(1000);
+    } while ((bmkt_init_fps_ret = bmkt_init_fps(session)) == BMKT_SENSOR_NOT_READY);
     BMKT_WRAP(bmkt_init_fps_ret, session);
     printf("BMKT initialized!\n");
 
     while (1) {
-        sleep(1);
+        usleep(10000);
     }
 
     exit_program(session, 0);
