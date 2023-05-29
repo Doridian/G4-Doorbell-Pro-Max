@@ -8,84 +8,102 @@
 
 #define bmkt_ctx_t void
 
-typedef enum bmkt_sensor_state
-{
-	BMKT_SENSOR_STATE_UNINIT 			= 0,
-	BMKT_SENSOR_STATE_IDLE,
-	BMKT_SENSOR_STATE_INIT,
-	BMKT_SENSOR_STATE_EXIT,
+typedef enum bmkt_sensor_state {
+    BMKT_SENSOR_STATE_UNINIT = 0,
+    BMKT_SENSOR_STATE_IDLE,
+    BMKT_SENSOR_STATE_INIT,
+    BMKT_SENSOR_STATE_EXIT,
 } bmkt_sensor_state_t;
 
-typedef enum
-{
-	BMKT_OP_STATE_START    = -1,
-	BMKT_OP_STATE_GET_RESP,
-	BMKT_OP_STATE_WAIT_INTERRUPT,
-	BMKT_OP_STATE_SEND_ASYNC,
-	BMKT_OP_STATE_COMPLETE,
+typedef enum {
+    BMKT_OP_STATE_START = -1,
+    BMKT_OP_STATE_GET_RESP,
+    BMKT_OP_STATE_WAIT_INTERRUPT,
+    BMKT_OP_STATE_SEND_ASYNC,
+    BMKT_OP_STATE_COMPLETE,
 } bmkt_op_state_t;
 
 typedef int (*bmkt_resp_cb_t)(bmkt_response_t *resp, void *cb_ctx);
 typedef int (*bmkt_event_cb_t)(bmkt_finger_event_t *event, void *cb_ctx);
 typedef int (*bmkt_general_error_cb_t)(uint16_t error, void *cb_ctx);
 
-typedef struct bmkt_sensor_version
-{
-	uint32_t build_time;
-	uint32_t build_num;
-	uint8_t version_major;
-	uint8_t version_minor;
-	uint8_t target;
-	uint8_t product;
-	uint8_t silicon_rev;
-	uint8_t formal_release;
-	uint8_t platform;
-	uint8_t patch;
-	uint8_t serial_number[6];
-	uint16_t security;
-	uint8_t iface;
-	uint8_t device_type;
+typedef struct bmkt_sensor_version {
+    uint32_t build_time;
+    uint32_t build_num;
+    uint8_t version_major;
+    uint8_t version_minor;
+    uint8_t target;
+    uint8_t product;
+    uint8_t silicon_rev;
+    uint8_t formal_release;
+    uint8_t platform;
+    uint8_t patch;
+    uint8_t serial_number[6];
+    uint16_t security;
+    uint8_t iface;
+    uint8_t device_type;
 } bmkt_sensor_version_t;
 
-typedef struct bmkt_session_ctx
-{
-	uint8_t seq_num;
-	bmkt_resp_cb_t resp_cb;
-	void *cb_ctx;
+typedef struct bmkt_session_ctx {
+    uint8_t seq_num;
+    bmkt_resp_cb_t resp_cb;
+    void *cb_ctx;
 } bmkt_session_ctx_t;
 
+typedef enum  {
+    GPIO_DIRECTION_IN = 0,
+    GPIO_DIRECTION_OUT = 1,
+} gpio_direction_t;
+
+typedef enum {
+    GPIO_EDGE_NONE = 0,
+    GPIO_EDGE_FALLING = 1,
+    GPIO_EDGE_RISING = 2,
+    GPIO_EDGE_BOTH = 3,
+} gpio_edge_t;
+
+typedef struct gpio_transport_info_t {
+    int pin;
+    gpio_direction_t direction;
+    gpio_edge_t edge;
+    int active_low;
+} gpio_transport_info_t;
+
+#define SPI_CPHA 0x01 /* clock phase */
+#define SPI_CPOL 0x02 /* clock polarity */
+typedef enum {
+    SPI_MODE_0 = (0|0),            /* (original MicroWire) */
+    SPI_MODE_1 = (0|SPI_CPHA),
+    SPI_MODE_2 = (SPI_CPOL|0),
+    SPI_MODE_3 = (SPI_CPOL|SPI_CPHA),
+} spi_mode_t;
+
 typedef struct spi_transport_info {
-    uint32_t mode;
-    uint32_t speed;
-    uint32_t bpw;
-    uint32_t addr;
-    uint32_t subaddr;
-    uint32_t unk1;
-    uint32_t unk2;
-    uint32_t unk3;
-    uint32_t unk4;
-    uint32_t unk5;
-    uint32_t unk6;
-    uint32_t unk7;
-    uint32_t unk8;
-    uint32_t unk9;
+    spi_mode_t mode;
+    int speed;
+    int bpw;
+    int addr;
+    int subaddr;
+    gpio_transport_info_t pin1;
+    gpio_transport_info_t pin2;
+    int unknown_padding;
 } spi_transport_info_t;
 
 typedef struct bmkt_sensor {
-    uint32_t type;
+    int type;
     spi_transport_info_t info;
 
-	bmkt_sensor_version_t version;
-	bmkt_session_ctx_t pending_sessions[BMKT_MAX_PENDING_SESSIONS];
-	int empty_session_idx;
-	int flags;
-	int seq_num;
-	bmkt_sensor_state_t sensor_state;
-	bmkt_event_cb_t finger_event_cb;
-	void *finger_cb_ctx;
-	bmkt_general_error_cb_t gen_err_cb;
-	void *gen_err_cb_ctx;
-	bmkt_op_state_t op_state;
+    bmkt_sensor_version_t version;
+    bmkt_session_ctx_t pending_sessions[BMKT_MAX_PENDING_SESSIONS];
+    int empty_session_idx;
+    int flags;
+    int seq_num;
+    bmkt_sensor_state_t sensor_state;
+    bmkt_event_cb_t finger_event_cb;
+    void *finger_cb_ctx;
+    bmkt_general_error_cb_t gen_err_cb;
+    void *gen_err_cb_ctx;
+    bmkt_op_state_t op_state;
 } bmkt_sensor_t;
 
 int bmkt_init(bmkt_ctx_t** session);

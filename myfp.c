@@ -33,31 +33,41 @@ int on_event(bmkt_finger_event_t *event, void *cb_ctx) {
     return BMKT_SUCCESS;
 }
 
+/*
+    GPIO
+    [0] ID
+    [1] DIRECTION 0=IN 1=OUT
+    [2] EDGE 2=rising 3=both 1=falling 0=none
+    [3] ACTIVE_LOW 0=0 1=1
+*/
+
 int main() {
     printf("Initializing BMKT...\n");
 
     bmkt_sensor_t sensor;
+    // Type 0 means SPI in this library
     sensor.type = 0;
-    sensor.info.mode = 0;
-    sensor.info.speed = 4000000;
-    sensor.info.bpw = 8;
+
+    // SPI settings
     sensor.info.addr = 1;
     sensor.info.subaddr = 1;
+    sensor.info.mode = SPI_MODE_0;
+    sensor.info.speed = 4000000;
+    sensor.info.bpw = 8;
 
-    // Seems to be GPIO
-    sensor.info.unk1 = 0x44;
-    sensor.info.unk2 = 1;
-    sensor.info.unk3 = 0;
-    sensor.info.unk4 = 0;
+    // GPIO pin information
+    sensor.info.pin1.pin = 68;
+    sensor.info.pin1.direction = GPIO_DIRECTION_OUT;
+    sensor.info.pin1.edge = GPIO_EDGE_NONE;
+    sensor.info.pin1.active_low = 0;
 
-    // Seems to be GPIO
-    sensor.info.unk5 = 0x45;
-    sensor.info.unk6 = 0;
-    sensor.info.unk7 = 2;
-    sensor.info.unk8 = 0;
+    sensor.info.pin2.pin = 69;
+    sensor.info.pin2.direction = GPIO_DIRECTION_IN;
+    sensor.info.pin2.edge = GPIO_EDGE_RISING;
+    sensor.info.pin2.active_low = 0;
 
     // No idea, might just be padding
-    sensor.info.unk9 = 0;
+    sensor.info.unknown_padding = 0;
 
     bmkt_ctx_t* session;
     BMKT_WRAP(bmkt_init(&session));
