@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <libbmkt/bmkt.h>
 #include <libbmkt/custom.h>
@@ -22,11 +23,11 @@ typedef struct cb_ctx_struct {
     int last_error;
 } cb_ctx_t;
 
-int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
+static int on_response(bmkt_response_t* resp, void* cb_ctx_void) {
     return BMKT_SUCCESS;
 }
 
-int on_error(uint16_t error, void* cb_ctx_void) {
+static int on_error(uint16_t error, void* cb_ctx_void) {
     return BMKT_SUCCESS;
 }
 
@@ -39,6 +40,13 @@ static void bmkt_main_close(cb_ctx_t* ctx) {
     }
     free(ctx);
 }
+
+#define BMKT_HANDLE_RES \
+    if (res != BMKT_SUCCESS) { \
+        ctx->state = IF_STATE_INVALID; \
+        ctx->last_error = res; \
+        return ctx; \
+    }
 
 static cb_ctx_t* bmkt_main_init() {
     bmkt_sensor_t sensor;
@@ -72,20 +80,17 @@ static cb_ctx_t* bmkt_main_init() {
     int res;
 
     res = bmkt_init(&session);
-    if (res != BMKT_SUCCESS) {
-        ctx->state = IF_STATE_INVALID;
-        ctx->last_error = res;
-        return ctx;
-    }
+    BMKT_HANDLE_RES;
 
     ctx->session = session;
     ctx->state = IF_STATE_INIT;
     res = bmkt_open(session, &sensor, &session_out, &on_response, &ctx, &on_error, &ctx);
-    if (res != BMKT_SUCCESS) {
-        ctx->state = IF_STATE_INVALID;
-        ctx->last_error = res;
-        return ctx;
-    }
+    BMKT_HANDLE_RES;
+
+    do  {
+        usleep(1000);
+    } while ((res = bmkt_init_fps(session)) == BMKT_SENSOR_NOT_READY);
+    BMKT_HANDLE_RES;
 
     return ctx;
 }

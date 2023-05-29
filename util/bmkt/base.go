@@ -12,16 +12,13 @@ type BMKTContext struct {
 	ctx *C.cb_ctx_t
 }
 
-const IF_STATE_INVALID = -1
-const IF_STATE_IDLE = 0
-
 func Open() (*BMKTContext, error) {
 	ctxPtr := C.bmkt_main_init()
 	if ctxPtr == nil {
 		return nil, errors.New("unknown error allocating context")
 	}
 
-	if ctxPtr.state == IF_STATE_INVALID {
+	if ctxPtr.state == C.IF_STATE_INVALID {
 		return nil, fmt.Errorf("code %d initializing BMKT", ctxPtr.last_error)
 	}
 
