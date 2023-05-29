@@ -200,10 +200,12 @@ typedef struct bmkt_sensor_desc
   int flags;
 } bmkt_sensor_desc_t;
 
+typedef uint8_t user_id_t[BMKT_MAX_USER_ID_LEN];
+
 typedef struct bmkt_user_id
 {
   uint8_t user_id_len;
-  uint8_t user_id[BMKT_MAX_USER_ID_LEN];
+  user_id_t user_id;
 } bmkt_user_id_t;
 
 #ifdef __cplusplus

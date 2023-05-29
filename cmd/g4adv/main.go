@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("%v", bmktCtx)
+	log.Printf("Entering idle main loop...")
 
 	for {
 		time.Sleep(time.Second * 1)

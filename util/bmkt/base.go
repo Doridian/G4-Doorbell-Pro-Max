@@ -1,5 +1,6 @@
 package bmkt
 
+// #include <libbmkt/custom.h>
 // #include "wrapper.h"
 // #cgo LDFLAGS: -lbmkt
 import "C"
@@ -17,9 +18,10 @@ type BMKTContext struct {
 	id         uint64
 	cid        C.uint64_t
 	sensor     C.bmkt_sensor_t
-	ctx        *C.bmkt_ctx_t
+	session    *C.bmkt_ctx_t
 	MaxRetries int
 	RetryDelay time.Duration
+	state      int
 }
 
 type runnable func() C.int
@@ -79,7 +81,7 @@ func New() (*BMKTContext, error) {
 }
 
 func isErrorTransient(err C.int) bool {
-	return err == C.BMKT_SENSOR_NOT_READY || err == C.BMKT_TIMEOUT
+	return err == C.BMKT_SENSOR_NOT_READY || err == C.BMKT_TIMEOUT || err == C.BMKT_OP_TIME_OUT
 }
 
 func wrapBMKTError(err C.int) error {
@@ -89,8 +91,8 @@ func wrapBMKTError(err C.int) error {
 	return fmt.Errorf("code %d error", int(err))
 }
 
-func (c *BMKTContext) runWithRetry(runfunc runnable) error {
-	for curRetry := 0; curRetry < c.MaxRetries; curRetry++ {
+func (ctx *BMKTContext) wrapAndRunWithRetry(runfunc runnable) error {
+	for curRetry := 0; curRetry < ctx.MaxRetries; curRetry++ {
 		res := runfunc()
 		if res == C.BMKT_SUCCESS {
 			return nil
@@ -98,42 +100,42 @@ func (c *BMKTContext) runWithRetry(runfunc runnable) error {
 		if !isErrorTransient(res) {
 			return fmt.Errorf("code %d error", res)
 		}
-		time.Sleep(c.RetryDelay)
+		time.Sleep(ctx.RetryDelay)
 	}
 	return errors.New("retries exhausted")
 }
 
-func (c *BMKTContext) open() error {
-	bmktContexts[c.id] = c
-	c.ctx = C.bmkt_wrapped_init()
-	if c.ctx == nil {
+func (ctx *BMKTContext) open() error {
+	bmktContexts[ctx.id] = ctx
+	ctx.session = C.bmkt_wrapped_init()
+	if ctx.session == nil {
 		return errors.New("bmkt_init() failure")
 	}
-	err := wrapBMKTError(C.bmkt_wrapped_open(c.ctx, &c.sensor, &c.cid))
+	err := wrapBMKTError(C.bmkt_wrapped_open(ctx.session, &ctx.sensor, &ctx.cid))
 	if err != nil {
 		return err
 	}
-	return c.runWithRetry(func() C.int {
-		return C.bmkt_init_fps(c.ctx)
+	return ctx.wrapAndRunWithRetry(func() C.int {
+		return C.bmkt_init_fps(ctx.session)
 	})
 }
 
-func (c *BMKTContext) Open() error {
-	err := c.open()
+func (ctx *BMKTContext) Open() error {
+	err := ctx.open()
 	if err != nil {
-		c.Close()
+		ctx.Close()
 	}
 	return err
 }
 
-func (c *BMKTContext) Close() {
-	delete(bmktContexts, c.id)
-	if c.ctx == nil {
+func (ctx *BMKTContext) Close() {
+	delete(bmktContexts, ctx.id)
+	if ctx.session == nil {
 		return
 	}
-	ctx := c.ctx
-	c.ctx = nil
+	session := ctx.session
+	ctx.session = nil
 
-	C.bmkt_close(ctx)
-	C.bmkt_exit(ctx)
+	C.bmkt_close(session)
+	C.bmkt_exit(session)
 }

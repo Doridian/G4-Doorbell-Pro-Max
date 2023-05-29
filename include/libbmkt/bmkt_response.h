@@ -320,7 +320,7 @@ typedef struct bmkt_enroll_resp
 {
   int     progress;                             /**< Shows current progress status [0-100] */
   uint8_t finger_id;                            /**< User's finger id [1-10] */
-  uint8_t user_id[BMKT_MAX_USER_ID_LEN];        /**< User name to be enrolled */
+  user_id_t user_id;                            /**< User name to be enrolled */
 } bmkt_enroll_resp_t;
 
 /**
@@ -331,7 +331,7 @@ struct bmkt_auth_resp
 {
   double  match_result;                         /**< match result returned by matcher */
   uint8_t finger_id;                            /**< Matched templates's finger id */
-  uint8_t user_id[BMKT_MAX_USER_ID_LEN];        /**< Matched template's user id */
+  user_id_t user_id;                            /**< Matched template's user id */
 };
 
 typedef struct bmkt_auth_resp bmkt_verify_resp_t;   /**< Returned by verify */

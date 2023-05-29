@@ -1,9 +1,5 @@
 #pragma once
 
-#include <stdlib.h>
-#include <unistd.h>
-
-#include <libbmkt/bmkt.h>
 #include <libbmkt/custom.h>
 
 extern void c_on_error(uint64_t id, uint16_t code);
