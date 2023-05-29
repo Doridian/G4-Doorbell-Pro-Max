@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#include "bmkt.h"
+#include "bmkt_response.h"
+#include "bmkt_message.h"
+
 #define BMKT_MAX_PENDING_SESSIONS 2
 
 // Parts of these are from synaptics libfprint fork or libfprint itself
@@ -112,3 +116,6 @@ int bmkt_init_fps(bmkt_ctx_t* session);
 
 int bmkt_identify(bmkt_ctx_t* session);
 int bmkt_enroll(bmkt_ctx_t* session, const uint8_t* user_id,  uint32_t user_id_len, uint8_t finger_id);
+
+int bmkt_close(bmkt_ctx_t* session);
+int bmkt_exit(bmkt_ctx_t* session);

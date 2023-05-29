@@ -32,7 +32,6 @@
 #define BMKT_MAX_NUM_TEMPLATES_INTERNAL_FLASH 15
 
 #include <stdint.h>
-#include "bmkt_response.h"
 
 /*!
  *******************************************************************************
@@ -200,25 +199,6 @@ typedef struct bmkt_sensor_desc
   int product_id;
   int flags;
 } bmkt_sensor_desc_t;
-
-/**
- * bmkt_finger_state_t:
- * Finger state representation values.
- */
-typedef enum {
-  BMKT_FINGER_STATE_UNKNOWN    = 0,
-  BMKT_FINGER_STATE_ON_SENSOR,
-  BMKT_FINGER_STATE_NOT_ON_SENSOR,
-} bmkt_finger_state_t;
-
-/**
- * bmkt_finger_event_t:
- * Structure containing finger state
- */
-typedef struct bmkt_finger_event
-{
-  bmkt_finger_state_t finger_state;
-} bmkt_finger_event_t;
 
 typedef struct bmkt_user_id
 {

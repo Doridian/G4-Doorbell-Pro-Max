@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libbmkt/bmkt.h"
 #include "libbmkt/custom.h"
@@ -12,24 +13,95 @@
         int res = FUNC; \
         if (res != BMKT_SUCCESS) { \
             printf(#FUNC " failed (%d)\n", res); \
-            exit(1); \
+            exit_program(session, 1); \
         } else { \
             printf(#FUNC " OK\n"); \
         } \
     }
 
-int on_response(bmkt_response_t *resp, void *cb_ctx) {
-    printf("on_response(%d / 0x%02x)\n", resp->response_id, resp->response_id);
+void exit_program(bmkt_ctx_t* session, int code) {
+    if (session != NULL) {
+        BMKT_WRAP(bmkt_close(session));
+        BMKT_WRAP(bmkt_exit(session));
+    }
+    exit(code);
+}
+
+void run_bmkt_identify(bmkt_ctx_t* session) {
+    BMKT_WRAP(bmkt_identify(session));
+}
+
+void run_bmkt_enroll(bmkt_ctx_t* session, const char* user_id, int finger_id) {
+    BMKT_WRAP(bmkt_enroll(session, user_id, strlen(user_id), finger_id));
+}
+
+void on_enroll_progress(int percent) {
+    printf("Enrollment progress %d %%\n", percent);
+}
+
+int on_response(bmkt_response_t* resp, void* cb_ctx) {
+    switch (resp->response_id) {
+        // Events
+        case BMKT_EVT_FINGER_REPORT:
+            switch (resp->response.finger_event_resp.finger_state) {
+                case BMKT_EVT_FINGER_STATE_NOT_ON_SENSOR:
+                    printf("Finger removed from sensor!\n");
+                    break;
+                case BMKT_EVT_FINGER_STATE_ON_SENSOR:
+                    printf("Finger placed on sensor, running identify!\n");
+                    run_bmkt_identify((bmkt_ctx_t*)cb_ctx);
+                    break;
+            }
+            break;
+
+        // Enrollment
+        case BMKT_RSP_ENROLL_READY:
+            on_enroll_progress(0);
+            break;
+        case BMKT_RSP_ENROLL_FAIL:
+            on_enroll_progress(-1);
+            break;
+        case BMKT_RSP_ENROLL_OK:
+            on_enroll_progress(100);
+            break;
+        case BMKT_RSP_ENROLL_REPORT:
+            on_enroll_progress(resp->response.enroll_resp.progress);
+            break;
+
+        // Verify / verify_resp
+        case BMKT_RSP_VERIFY_READY:
+            printf("Verify started!\n");
+            break;
+        case BMKT_RSP_VERIFY_OK:
+            resp->response.verify_resp.user_id[BMKT_MAX_USER_ID_LEN - 1] = 0; // Just to be safe...
+            printf("Verify OK! You are %s finger %d\n", resp->response.verify_resp.user_id, resp->response.verify_resp.finger_id);
+            break;
+        case BMKT_RSP_VERIFY_FAIL:
+            printf("Verify FAIL!\n");
+            break;
+
+        // Identify / id_resp
+        case BMKT_RSP_ID_READY:
+            printf("Identify started!\n");
+            break;
+        case BMKT_RSP_ID_OK:
+            resp->response.id_resp.user_id[BMKT_MAX_USER_ID_LEN - 1] = 0; // Just to be safe...
+            printf("Identify OK! You are %s finger %d\n", resp->response.id_resp.user_id, resp->response.id_resp.finger_id);
+            break;
+        case BMKT_RSP_ID_FAIL:
+            printf("Identify FAIL!\n");
+            break;
+
+        // Unhandled
+        default:
+            printf("on_response(%d / 0x%02x)\n", resp->response_id, resp->response_id);
+            break;
+    }
     return BMKT_SUCCESS;
 }
 
 int on_error(uint16_t error, void *cb_ctx) {
     printf("on_error(%d)\n", error);
-    return BMKT_SUCCESS;
-}
-
-int on_event(bmkt_finger_event_t *event, void *cb_ctx) {
-    printf("on_event(%d)\n", event->finger_state);
     return BMKT_SUCCESS;
 }
 
@@ -71,7 +143,7 @@ int main() {
 
     bmkt_ctx_t* session;
     BMKT_WRAP(bmkt_init(&session));
-    BMKT_WRAP(bmkt_open(session, &sensor, &session, &on_response, NULL, &on_error, NULL));
+    BMKT_WRAP(bmkt_open(session, &sensor, &session, &on_response, session, &on_error, session));
 
     sleep(1);
     int bmkt_init_fps_ret;
@@ -79,17 +151,16 @@ int main() {
         usleep(10);
     }
     BMKT_WRAP(bmkt_init_fps_ret);
-    // TODO: Wait for init_fps ok response
-    sleep(1);
-    BMKT_WRAP(bmkt_identify(session));
+    // TODO: Wait for init_fps ok response maybe
+    printf("BMKT initialized!\n");
+
+    //BMKT_WRAP(bmkt_identify(session));
     //BMKT_WRAP(bmkt_enroll(session, "doridian\0", strlen("doridian"), 1));
-    // TODO: Actually do something lol
     while (1) {
         sleep(1);
     }
 
-    printf("BMKT initialized!\n");
-
+    exit_program(session, 0);
     return 0;
 }
 
