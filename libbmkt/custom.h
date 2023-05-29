@@ -65,8 +65,8 @@ typedef struct spi_transport_info {
     uint32_t unk3;
     uint32_t unk4;
     uint32_t unk5;
-    uint64_t unk6;
-    uint64_t unk7;
+    uint32_t unk6;
+    uint32_t unk7;
     uint32_t unk8;
     uint32_t unk9;
 } spi_transport_info_t;
@@ -91,4 +91,6 @@ typedef struct bmkt_sensor {
 int bmkt_init(bmkt_ctx_t** session);
 int bmkt_open(bmkt_ctx_t* session, bmkt_sensor_t* sensor, bmkt_ctx_t** session_out, bmkt_resp_cb_t response_cb, void* response_ctx, bmkt_general_error_cb_t error_cb, void* error_ctx);
 int bmkt_init_fps(bmkt_ctx_t* session);
+
 int bmkt_identify(bmkt_ctx_t* session);
+int bmkt_enroll(bmkt_ctx_t* session, const uint8_t* user_id,  uint32_t user_id_len, uint8_t finger_id);

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "libbmkt/bmkt.h"
 #include "libbmkt/custom.h"
@@ -18,7 +19,7 @@
     }
 
 int on_response(bmkt_response_t *resp, void *cb_ctx) {
-    printf("on_response(%d)\n", resp->response_id);
+    printf("on_response(%d / 0x%02x)\n", resp->response_id, resp->response_id);
     return BMKT_SUCCESS;
 }
 
@@ -71,8 +72,11 @@ int main() {
     // TODO: Wait for init_fps ok response
     sleep(1);
     BMKT_WRAP(bmkt_identify(session));
+    //BMKT_WRAP(bmkt_enroll(session, "doridian\0", strlen("doridian"), 1));
     // TODO: Actually do something lol
-    sleep(1);
+    while (1) {
+        sleep(1);
+    }
 
     printf("BMKT initialized!\n");
 
