@@ -1,15 +1,21 @@
 package bmkt
 
-// #include "handler.h"
+// #include "wrapper.h"
 // #cgo LDFLAGS: -lbmkt
 import "C"
 import (
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"time"
 )
 
+var maxID uint64
+var bmktContexts = make(map[uint64]*BMKTContext)
+
 type BMKTContext struct {
+	id         uint64
+	cid        C.uint64_t
 	sensor     C.bmkt_sensor_t
 	ctx        *C.bmkt_ctx_t
 	MaxRetries int
@@ -18,11 +24,32 @@ type BMKTContext struct {
 
 type runnable func() C.int
 
+//export c_on_error
+func c_on_error(cid C.uint64_t, code C.uint16_t) {
+	ctx := bmktContexts[uint64(cid)]
+	if ctx == nil {
+		return
+	}
+	ctx.handleError(int(code))
+}
+
+//export c_on_response
+func c_on_response(cid C.uint64_t, resp *C.bmkt_response_t) {
+	ctx := bmktContexts[uint64(cid)]
+	if ctx == nil {
+		return
+	}
+	ctx.handleResponse(resp)
+}
+
 func New() (*BMKTContext, error) {
 	ctx := &BMKTContext{
+		id:         atomic.AddUint64(&maxID, 1),
 		MaxRetries: 3,
 		RetryDelay: time.Millisecond * 1,
 	}
+	ctx.cid = C.uint64_t(ctx.id)
+	bmktContexts[ctx.id] = ctx
 
 	// Type 0 means SPI in this library
 	ctx.sensor.transport_type = C.SENSOR_TRANSPORT_SPI
@@ -76,12 +103,13 @@ func (c *BMKTContext) runWithRetry(runfunc runnable) error {
 	return errors.New("retries exhausted")
 }
 
-func (c *BMKTContext) Open() error {
+func (c *BMKTContext) open() error {
+	bmktContexts[c.id] = c
 	c.ctx = C.bmkt_wrapped_init()
 	if c.ctx == nil {
 		return errors.New("bmkt_init() failure")
 	}
-	err := wrapBMKTError(C.bmkt_wrapped_open(c.ctx, &c.sensor))
+	err := wrapBMKTError(C.bmkt_wrapped_open(c.ctx, &c.sensor, &c.cid))
 	if err != nil {
 		return err
 	}
@@ -90,7 +118,16 @@ func (c *BMKTContext) Open() error {
 	})
 }
 
+func (c *BMKTContext) Open() error {
+	err := c.open()
+	if err != nil {
+		c.Close()
+	}
+	return err
+}
+
 func (c *BMKTContext) Close() {
+	delete(bmktContexts, c.id)
 	if c.ctx == nil {
 		return
 	}
