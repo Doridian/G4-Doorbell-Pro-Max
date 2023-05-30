@@ -21,13 +21,13 @@ func convertStringToCUserID(username string) (*C.uint8_t, C.uint32_t) {
 	return c_username, c_username_len
 }
 
-// TODO: Wait for result
 func (ctx *BMKTContext) Cancel() error {
 	if ctx.state == IF_STATE_IDLE || ctx.state == IF_STATE_INIT {
 		return nil
 	}
 
 	ctx.state = IF_STATE_CANCELLING
+	ctx.lastCancelResult = -1
 	err := ctx.wrapAndRunWithRetry(func() C.int {
 		return C.bmkt_cancel_op(ctx.session)
 	})
@@ -35,7 +35,7 @@ func (ctx *BMKTContext) Cancel() error {
 		return err
 	}
 	ctx.waitForIdle()
-	return nil
+	return wrapBMKTError(ctx.lastCancelResult)
 }
 
 func (ctx *BMKTContext) waitForIdle() {

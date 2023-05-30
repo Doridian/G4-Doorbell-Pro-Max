@@ -15,8 +15,9 @@ var maxID uint64
 var bmktContexts = make(map[uint64]*BMKTContext)
 
 type BMKTContext struct {
-	MaxRetries int
-	RetryDelay time.Duration
+	MaxRetries   int
+	RetryDelay   time.Duration
+	AutoIdentify bool
 
 	id  uint64
 	cid C.uint64_t
@@ -27,13 +28,28 @@ type BMKTContext struct {
 
 	state  int
 	logger zerolog.Logger
+
+	lastInitResult       C.int
+	lastEnrollResult     C.int
+	lastCancelResult     C.int
+	lastDeleteUserResult C.int
+	lastDeleteAllResult  C.int
+
+	lastVerifyResult   C.int
+	lastVerifyUsername string
+	lastVerifyFinger   int
+
+	lastIdentifyResult   C.int
+	lastIdentifyUsername string
+	lastIdentifyFinger   int
 }
 
 func New(logger zerolog.Logger) (*BMKTContext, error) {
 	id := atomic.AddUint64(&maxID, 1)
 	ctx := &BMKTContext{
-		MaxRetries: 3,
-		RetryDelay: time.Millisecond * 1,
+		MaxRetries:   3,
+		RetryDelay:   time.Millisecond * 1,
+		AutoIdentify: true,
 
 		id:  id,
 		cid: C.uint64_t(id),

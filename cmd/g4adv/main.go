@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"os"
 	"time"
 
 	"github.com/Doridian/G4-Doorbell-Pro-Max/util/bmkt"
@@ -9,9 +9,14 @@ import (
 )
 
 func main() {
-	logger := zerolog.New(zerolog.NewConsoleWriter())
+	os.Setenv("TZ", "Etc/UTC")
+	consoleWriter := zerolog.NewConsoleWriter()
+	zerolog.TimeFieldFormat = time.RFC3339
+	consoleWriter.TimeFormat = time.RFC3339
+	logger := zerolog.New(consoleWriter).With().Timestamp().Logger()
 
-	bmktCtx, err := bmkt.New(logger)
+	bmktLogger := logger.With().Str("component", "bmkt").Logger()
+	bmktCtx, err := bmkt.New(bmktLogger)
 	if err != nil {
 		panic(err)
 	}
@@ -20,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("Entering idle main loop...")
+	logger.Info().Msg("Entering idle main loop...")
 
 	for {
 		time.Sleep(time.Second * 1)

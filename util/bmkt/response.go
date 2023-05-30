@@ -3,8 +3,10 @@ package bmkt
 // #include <libbmkt/custom.h>
 import "C"
 import (
-	"log"
+	"fmt"
 	"unsafe"
+
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -19,111 +21,139 @@ const (
 	IF_STATE_INVALID       = iota
 )
 
-func (c *BMKTContext) handleResponseError(resp *C.bmkt_response_t, op string) {
-	c.state = IF_STATE_IDLE
-	log.Printf("Got error %d during %s", resp.result, op)
+func (ctx *BMKTContext) handleResponseCode(resp *C.bmkt_response_t, op string) {
+	ctx.state = IF_STATE_IDLE
+	var evt *zerolog.Event
+	if resp.result == C.BMKT_SUCCESS {
+		evt = ctx.logger.Info().Bool("success", true)
+	} else {
+		evt = ctx.logger.Warn().Bool("success", false)
+	}
+	evt.Str("type", "sensor_response").Str("op", op).Int("result", int(resp.result)).Send()
 }
 
-func (c *BMKTContext) handleEnrollProgress(progress int) {
-	log.Printf("Enroll progress %d %%", progress)
+func (ctx *BMKTContext) handleEnrollProgress(progress int) {
+	ctx.logger.Info().Str("type", "enroll_progress").Int("progress", progress).Send()
+}
+
+func (ctx *BMKTContext) handleDeleteAllProgress(progress int) {
+	ctx.logger.Info().Str("type", "delete_all_progress").Int("progress", progress).Send()
+}
+
+func (ctx *BMKTContext) handleFingerPresence(present bool, op string) {
+	ctx.logger.Info().Str("type", "finger_presence").Str("op", op).Bool("present", present).Send()
+	if ctx.state == IF_STATE_IDLE && ctx.AutoIdentify {
+		go ctx.Identify()
+	}
 }
 
 func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
+	ctx.sessionLock.Lock()
+	defer ctx.sessionLock.Unlock()
+
 	switch resp.response_id {
 	// Events
 	case C.BMKT_EVT_FINGER_REPORT:
 		finger_event := (*C.bmkt_finger_event_t)(unsafe.Pointer(&resp.response))
 		switch finger_event.finger_state {
 		case C.BMKT_EVT_FINGER_STATE_NOT_ON_SENSOR:
-			log.Printf("Finger removed from sensor!\n")
-			if ctx.state == IF_STATE_IDLE {
-				ctx.Identify()
-			}
+			ctx.handleFingerPresence(false, "finger_report")
 		case C.BMKT_EVT_FINGER_STATE_ON_SENSOR:
-			log.Printf("Finger placed on sensor!\n")
+			ctx.handleFingerPresence(true, "finger_report")
 		}
 
 	// Init
 	case C.BMKT_RSP_FPS_INIT_OK:
-		ctx.state = IF_STATE_IDLE
-		log.Printf("Init OK!\n")
 		init_resp := (*C.bmkt_init_resp_t)(unsafe.Pointer(&resp.response))
-		if int(init_resp.finger_presence) == 0 {
-			ctx.Identify()
-		}
+		is_finger_present := int(init_resp.finger_presence) == 0
+		ctx.handleFingerPresence(is_finger_present, "init_fps")
+		fallthrough
 	case C.BMKT_RSP_FPS_INIT_FAIL:
-		ctx.handleResponseError(resp, "Init")
+		ctx.lastInitResult = resp.result
+		ctx.handleResponseCode(resp, "init_fps")
 
 	// Enrollment
 	case C.BMKT_RSP_ENROLL_READY:
 		ctx.state = IF_STATE_ENROLLING
+		ctx.lastEnrollResult = -1
 		ctx.handleEnrollProgress(0)
 	case C.BMKT_RSP_ENROLL_OK:
-		ctx.state = IF_STATE_IDLE
-		ctx.handleEnrollProgress(100)
+		fallthrough
 	case C.BMKT_RSP_ENROLL_FAIL:
-		ctx.handleResponseError(resp, "Enroll")
-		ctx.handleEnrollProgress(-1)
+		ctx.handleEnrollProgress(100)
+		ctx.lastEnrollResult = resp.result
+		ctx.handleResponseCode(resp, "enroll")
 	case C.BMKT_RSP_ENROLL_REPORT:
 		ctx.state = IF_STATE_ENROLLING
+		ctx.lastEnrollResult = -1
 		enroll_resp := (*C.bmkt_enroll_resp_t)(unsafe.Pointer(&resp.response))
 		ctx.handleEnrollProgress(int(enroll_resp.progress))
 
 	// Verify / verify_resp
 	case C.BMKT_RSP_VERIFY_READY:
 		ctx.state = IF_STATE_VERIFYING
-		log.Printf("Verify started!\n")
+		ctx.lastVerifyResult = -1
+		ctx.lastVerifyFinger = -1
+		ctx.lastVerifyUsername = ""
+		ctx.logger.Info().Str("type", "sensor_ready").Str("op", "verify").Send()
 	case C.BMKT_RSP_VERIFY_OK:
-		ctx.state = IF_STATE_IDLE
 		verify_resp := (*C.bmkt_verify_resp_t)(unsafe.Pointer(&resp.response))
 
 		user_id := convertCUserIDToString(&verify_resp.user_id)
 		finger_id := int(verify_resp.finger_id)
 
-		log.Printf("Verify OK! You are %s finger %d\n", user_id, finger_id)
+		ctx.lastVerifyUsername = user_id
+		ctx.lastVerifyFinger = finger_id
+		fallthrough
 	case C.BMKT_RSP_VERIFY_FAIL:
-		ctx.handleResponseError(resp, "Verify")
+		ctx.lastVerifyResult = resp.result
+		ctx.handleResponseCode(resp, "verify")
 
 	// Identify / id_resp
 	case C.BMKT_RSP_ID_READY:
 		ctx.state = IF_STATE_IDENTIFYING
-		log.Printf("Identify started!\n")
+		ctx.lastIdentifyResult = -1
+		ctx.lastIdentifyFinger = -1
+		ctx.lastIdentifyUsername = ""
+		ctx.logger.Info().Str("type", "sensor_ready").Str("op", "identify").Send()
 	case C.BMKT_RSP_ID_OK:
-		ctx.state = IF_STATE_IDLE
 		id_resp := (*C.bmkt_identify_resp_t)(unsafe.Pointer(&resp.response))
 
 		user_id := convertCUserIDToString(&id_resp.user_id)
 		finger_id := int(id_resp.finger_id)
 
-		log.Printf("Identify OK! You are %s finger %d\n", user_id, finger_id)
+		ctx.lastIdentifyUsername = user_id
+		ctx.lastIdentifyFinger = finger_id
+		fallthrough
 	case C.BMKT_RSP_ID_FAIL:
-		ctx.handleResponseError(resp, "Identify")
+		ctx.handleResponseCode(resp, "identify")
 
 	// Op cancalltion
 	case C.BMKT_RSP_CANCEL_OP_OK:
-		ctx.state = IF_STATE_IDLE
-		log.Printf("Cancel OK!\n")
+		fallthrough
 	case C.BMKT_RSP_CANCEL_OP_FAIL:
-		ctx.handleResponseError(resp, "Cancel")
+		ctx.handleResponseCode(resp, "cancel")
 
-	// Deletion
+	// Delete all
 	case C.BMKT_RSP_DELETE_PROGRESS:
 		ctx.state = IF_STATE_DELETING_ALL
+		ctx.lastDeleteAllResult = -1
 		del_all_users_resp := (*C.bmkt_del_all_users_resp_t)(unsafe.Pointer(&resp.response))
-		log.Printf("Delete all progress %d\n", del_all_users_resp.progress)
+		ctx.handleDeleteAllProgress(int(del_all_users_resp.progress))
 	case C.BMKT_RSP_DEL_FULL_DB_OK:
-		ctx.state = IF_STATE_IDLE
-		log.Printf("Delete all OK!\n")
+		fallthrough
 	case C.BMKT_RSP_DEL_FULL_DB_FAIL:
-		ctx.handleResponseError(resp, "Delete all")
+		ctx.handleResponseCode(resp, "delete_all")
+
+	// Delete user/finger
 	case C.BMKT_RSP_DEL_USER_FP_OK:
-		ctx.state = IF_STATE_IDLE
-		log.Printf("Delete user OK!\n")
+		fallthrough
 	case C.BMKT_RSP_DEL_USER_FP_FAIL:
-		ctx.handleResponseError(resp, "Delete user")
+		ctx.lastDeleteUserResult = resp.result
+		ctx.handleResponseCode(resp, "delete_user")
 
 	// Unhandled
 	default:
-		log.Printf("on_response(%d / 0x%02x)\n", resp.response_id, resp.response_id)
+		ctx.handleResponseCode(resp, fmt.Sprintf("unknown_0x%02x", resp.response_id))
 	}
 }
