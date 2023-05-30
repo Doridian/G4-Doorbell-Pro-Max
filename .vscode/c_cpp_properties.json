@@ -17,7 +17,7 @@
             "intelliSenseMode": "linux-gcc-arm64"
         },
         {
-            "name": "Linux64",
+            "name": "Linux_aarch64",
             "includePath": [
                 "${workspaceFolder}/include",
                 "/usr/aarch64-linux-gnu/include"
@@ -29,6 +29,23 @@
             ],
             "windowsSdkVersion": "10.0.22000.0",
             "compilerPath": "/usr/bin/aarch64-linux-gnu-gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm64"
+        },
+        {
+            "name": "Linux_native",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "/usr/aarch64-linux-gnu/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-arm64"
