@@ -2,7 +2,7 @@
 set -ex
 
 REAL_CC=aarch64-linux-gnu-gcc
-if [ "$(uname -m)" = "aarch64" ]; then
+if [ "$(uname -s -m)" = "Linux aarch64" ]; then
     REAL_CC=gcc
 fi
 
