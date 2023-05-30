@@ -10,8 +10,6 @@ if [ "$(uname -m)" = "aarch64" ]; then
     REAL_CC=gcc
 fi
 
-#export CC=/docker/cc.sh
-#export CC_FOR_TARGET=/docker/cc.sh
 export CC="$REAL_CC"
 export CC_FOR_TARGET="$REAL_CC"
 
@@ -21,8 +19,6 @@ export LDFLAGS="$CFLAGS -L/fw/image/rootfs/lib -lbmkt -lnxp-nfc /fw/image/rootfs
 runcc() {
     $CC_FOR_TARGET -Wall -Werror -nodefaultlibs $LDFLAGS "$@" -fno-stack-protector
 }
-#runcc mynfc.c -o ./dist/bin/mynfc -lnxp-nfc
-#runcc myfp.c -o ./dist/bin/myfp -lbmkt
 
 export CGO_CFLAGS="$CFLAGS"
 export CGO_LDFLAGS="$LDFLAGS"

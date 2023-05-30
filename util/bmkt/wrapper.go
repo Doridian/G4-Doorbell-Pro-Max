@@ -11,8 +11,8 @@ import (
 
 type runnable func() C.int
 
-//export c_on_error
-func c_on_error(cid C.uint64_t, code C.uint16_t) {
+//export go_bmkt_on_error
+func go_bmkt_on_error(cid C.uint64_t, code C.uint16_t) {
 	ctx := bmktContexts[uint64(cid)]
 	if ctx == nil {
 		return
@@ -20,8 +20,8 @@ func c_on_error(cid C.uint64_t, code C.uint16_t) {
 	ctx.handleError(int(code))
 }
 
-//export c_on_response
-func c_on_response(cid C.uint64_t, resp *C.bmkt_response_t) {
+//export go_bmkt_on_response
+func go_bmkt_on_response(cid C.uint64_t, resp *C.bmkt_response_t) {
 	ctx := bmktContexts[uint64(cid)]
 	if ctx == nil {
 		return
