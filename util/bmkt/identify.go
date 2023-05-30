@@ -9,8 +9,16 @@ func (ctx *BMKTContext) Identify() error {
 	if err != nil {
 		return err
 	}
+	ctx.sessionLock.Lock()
+	defer ctx.sessionLock.Unlock()
+
 	ctx.state = IF_STATE_IDENTIFYING
-	return ctx.wrapAndRunWithRetry(func() C.int {
+	err = ctx.wrapAndRunWithRetry(func() C.int {
 		return C.bmkt_identify(ctx.session)
 	})
+	if err != nil {
+		return err
+	}
+	ctx.waitForIdle()
+	return nil
 }

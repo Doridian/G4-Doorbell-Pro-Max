@@ -4,6 +4,7 @@ package bmkt
 // #include <libbmkt/custom.h>
 import "C"
 import (
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -20,8 +21,9 @@ type BMKTContext struct {
 	id  uint64
 	cid C.uint64_t
 
-	sensor  C.bmkt_sensor_t
-	session *C.bmkt_ctx_t
+	sensor      C.bmkt_sensor_t
+	session     *C.bmkt_ctx_t
+	sessionLock sync.Mutex
 
 	state  int
 	logger zerolog.Logger
@@ -68,6 +70,9 @@ func New(logger zerolog.Logger) (*BMKTContext, error) {
 }
 
 func (ctx *BMKTContext) Open() error {
+	ctx.sessionLock.Lock()
+	defer ctx.sessionLock.Unlock()
+
 	err := ctx.wrappedOpen()
 	if err != nil {
 		ctx.Close()

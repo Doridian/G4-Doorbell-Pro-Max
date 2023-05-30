@@ -3,7 +3,10 @@ package bmkt
 // #include <string.h>
 // #include <libbmkt/custom.h>
 import "C"
-import "unsafe"
+import (
+	"time"
+	"unsafe"
+)
 
 func convertCUserIDToString(c_user_id *C.user_id_t) string {
 	c_user_id_charptr := (*C.char)(unsafe.Pointer(c_user_id))
@@ -20,8 +23,23 @@ func convertStringToCUserID(username string) (*C.uint8_t, C.uint32_t) {
 
 // TODO: Wait for result
 func (ctx *BMKTContext) Cancel() error {
+	if ctx.state == IF_STATE_IDLE || ctx.state == IF_STATE_INIT {
+		return nil
+	}
+
 	ctx.state = IF_STATE_CANCELLING
-	return ctx.wrapAndRunWithRetry(func() C.int {
+	err := ctx.wrapAndRunWithRetry(func() C.int {
 		return C.bmkt_cancel_op(ctx.session)
 	})
+	if err != nil {
+		return err
+	}
+	ctx.waitForIdle()
+	return nil
+}
+
+func (ctx *BMKTContext) waitForIdle() {
+	for ctx.state != IF_STATE_IDLE {
+		time.Sleep(time.Microsecond * 100)
+	}
 }
