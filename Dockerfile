@@ -8,6 +8,7 @@ RUN apt update && \
         jq \
         python3-pip \
         golang-go \
+        rsync \
     && pip install ubi_reader
 
 RUN [ "$(uname -m)" = "aarch64" ] && apt install -y gcc || apt install -y gcc-aarch64-linux-gnu
