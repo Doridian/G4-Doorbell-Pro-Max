@@ -41,7 +41,6 @@ func New(logger zerolog.Logger) (*BMKTContext, error) {
 	}
 	bmktContexts[ctx.id] = ctx
 
-	// Type 0 means SPI in this library
 	ctx.sensor.transport_type = C.SENSOR_TRANSPORT_SPI
 
 	// SPI settings
