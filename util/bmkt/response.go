@@ -8,14 +8,15 @@ import (
 )
 
 const (
-	IF_STATE_INIT         = 0
-	IF_STATE_IDLE         = iota
-	IF_STATE_ENROLLING    = iota
-	IF_STATE_VERIFYING    = iota
-	IF_STATE_IDENTIFYING  = iota
-	IF_STATE_CANCELLING   = iota
-	IF_STATE_DELETING_ALL = iota
-	IF_STATE_INVALID      = iota
+	IF_STATE_INIT          = 0
+	IF_STATE_IDLE          = iota
+	IF_STATE_ENROLLING     = iota
+	IF_STATE_VERIFYING     = iota
+	IF_STATE_IDENTIFYING   = iota
+	IF_STATE_CANCELLING    = iota
+	IF_STATE_DELETING_ALL  = iota
+	IF_STATE_DELETING_USER = iota
+	IF_STATE_INVALID       = iota
 )
 
 func (c *BMKTContext) handleResponseError(resp *C.bmkt_response_t, op string) {

@@ -1,7 +1,7 @@
 package bmkt
 
-// #include <libbmkt/custom.h>
 // #include <string.h>
+// #include <libbmkt/custom.h>
 import "C"
 import "unsafe"
 
@@ -12,6 +12,13 @@ func convertCUserIDToString(c_user_id *C.user_id_t) string {
 	return str
 }
 
+func convertStringToCUserID(username string) (*C.uint8_t, C.uint32_t) {
+	c_username := (*C.uint8_t)(unsafe.Pointer(C.CString(username)))
+	c_username_len := C.uint32_t(len(username))
+	return c_username, c_username_len
+}
+
+// TODO: Wait for result
 func (ctx *BMKTContext) Cancel() error {
 	ctx.state = IF_STATE_CANCELLING
 	return ctx.wrapAndRunWithRetry(func() C.int {

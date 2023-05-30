@@ -54,6 +54,7 @@ func (ctx *BMKTContext) wrapAndRunWithRetry(runfunc runnable) error {
 	return errors.New("retries exhausted")
 }
 
+// TODO: Wait for result on init_fps
 func (ctx *BMKTContext) wrappedOpen() error {
 	bmktContexts[ctx.id] = ctx
 	ctx.session = C.bmkt_wrapped_init()
