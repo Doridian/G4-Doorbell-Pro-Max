@@ -1,6 +1,11 @@
 #pragma once
 
+#include <stdint.h>
 #include <libbmkt/custom.h>
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 extern void c_on_error(uint64_t id, uint16_t code);
 extern void c_on_response(uint64_t id, bmkt_response_t* resp);

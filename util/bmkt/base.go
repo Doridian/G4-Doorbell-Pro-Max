@@ -1,33 +1,44 @@
 package bmkt
 
-// #include <libbmkt/custom.h>
 // #cgo LDFLAGS: -lbmkt
+// #include <libbmkt/custom.h>
 import "C"
 import (
 	"sync/atomic"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 var maxID uint64
 var bmktContexts = make(map[uint64]*BMKTContext)
 
 type BMKTContext struct {
-	id         uint64
-	cid        C.uint64_t
-	sensor     C.bmkt_sensor_t
-	session    *C.bmkt_ctx_t
 	MaxRetries int
 	RetryDelay time.Duration
-	state      int
+
+	id  uint64
+	cid C.uint64_t
+
+	sensor  C.bmkt_sensor_t
+	session *C.bmkt_ctx_t
+
+	state  int
+	logger zerolog.Logger
 }
 
-func New() (*BMKTContext, error) {
+func New(logger zerolog.Logger) (*BMKTContext, error) {
+	id := atomic.AddUint64(&maxID, 1)
 	ctx := &BMKTContext{
-		id:         atomic.AddUint64(&maxID, 1),
 		MaxRetries: 3,
 		RetryDelay: time.Millisecond * 1,
+
+		id:  id,
+		cid: C.uint64_t(id),
+
+		state:  IF_STATE_INVALID,
+		logger: logger,
 	}
-	ctx.cid = C.uint64_t(ctx.id)
 	bmktContexts[ctx.id] = ctx
 
 	// Type 0 means SPI in this library

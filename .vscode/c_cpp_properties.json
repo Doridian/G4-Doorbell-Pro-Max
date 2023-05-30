@@ -19,7 +19,8 @@
         {
             "name": "Linux64",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/include",
+                "/usr/aarch64-linux-gnu/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -27,7 +28,7 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.22000.0",
-            "compilerPath": "",
+            "compilerPath": "/usr/bin/aarch64-linux-gnu-gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-arm64"

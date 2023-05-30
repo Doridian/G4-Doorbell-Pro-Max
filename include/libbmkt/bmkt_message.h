@@ -19,8 +19,7 @@
  */
 
 
-#ifndef BMKT_MESSAGE_H_
-#define BMKT_MESSAGE_H_
+#pragma once
 
 #include "bmkt.h"
 #include "bmkt_response.h"
@@ -87,4 +86,3 @@ int bmkt_compose_message(uint8_t *cmd, int *cmd_len, uint8_t msg_id, uint8_t seq
 
 int bmkt_parse_message_header(uint8_t *resp_buf, int resp_len, bmkt_msg_resp_t *msg_resp);
 int bmkt_parse_message_payload(bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp);
-#endif /* BMKT_MESSAGE_H_ */

@@ -1,6 +1,5 @@
 package bmkt
 
-// #include <libbmkt/custom.h>
 // #include "wrapper.h"
 import "C"
 

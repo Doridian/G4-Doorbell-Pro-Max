@@ -2,8 +2,10 @@ package bmkt
 
 // #include <libbmkt/custom.h>
 import "C"
-import "unsafe"
-import "log"
+import (
+	"log"
+	"unsafe"
+)
 
 const (
 	IF_STATE_INIT         = 0

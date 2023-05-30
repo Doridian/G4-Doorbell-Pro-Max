@@ -5,10 +5,13 @@ import (
 	"time"
 
 	"github.com/Doridian/G4-Doorbell-Pro-Max/util/bmkt"
+	"github.com/rs/zerolog"
 )
 
 func main() {
-	bmktCtx, err := bmkt.New()
+	logger := zerolog.New(zerolog.NewConsoleWriter())
+
+	bmktCtx, err := bmkt.New(logger)
 	if err != nil {
 		panic(err)
 	}

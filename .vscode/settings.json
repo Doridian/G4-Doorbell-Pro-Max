@@ -1,9 +1,11 @@
 {
     "go.toolsEnvVars": {
         "GOOS": "linux",
-        "GOARCH": "arm64"
-    },
-    "files.associations": {
-        "bmkt.h": "c"
+        "GOARCH": "arm64",
+        "CGO_ENABLED": "1",
+        "CGO_CFLAGS": "-O0 -g -I${workspaceRoot}/include",
+        "CGO_LDFLAGS": "-O0 -g -L${workspaceRoot}/dist/lib ${workspaceRoot}/dist/lib/libc.so.6 ${workspaceRoot}/dist/lib/ld-linux-aarch64.so.1 ${workspaceRoot}/dist/lib/libpthread.so.0",
+        "CC": "aarch64-linux-gnu-gcc",
+        "CC_FOR_TARGET": "aarch64-linux-gnu-gcc"
     }
 }
