@@ -23,6 +23,10 @@ const (
 
 func (ctx *BMKTContext) handleResponseCode(resp *C.bmkt_response_t, op string) {
 	ctx.state = IF_STATE_IDLE
+	ctx.handleResponseCodeNoIdle(resp, op)
+}
+
+func (ctx *BMKTContext) handleResponseCodeNoIdle(resp *C.bmkt_response_t, op string) {
 	var evt *zerolog.Event
 	if resp.result == C.BMKT_SUCCESS {
 		evt = ctx.logger.Info().Bool("success", true)
@@ -151,7 +155,7 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 		ctx.handleResponseCode(resp, "delete_user")
 
 	case C.BMKT_RSP_CAPTURE_COMPLETE:
-		ctx.handleResponseCode(resp, "capture_complete")
+		ctx.handleResponseCodeNoIdle(resp, "capture_complete")
 
 	// Unhandled
 	default:
