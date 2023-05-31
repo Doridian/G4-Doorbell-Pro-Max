@@ -30,4 +30,4 @@ export GOOS=linux
 export GOARCH=arm64
 export CGO_ENABLED=1
 go mod tidy
-go build -o ./dist/bin/g4adv ./cmd/g4adv
+go build -buildvcs=false -o ./dist/bin/g4adv ./cmd/g4adv

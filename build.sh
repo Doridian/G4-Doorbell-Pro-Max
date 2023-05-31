@@ -16,7 +16,7 @@ else
 fi
 
 copycam() {
-    cat "dist/bin/$1" | ssh ubnt@camera-front-door.foxden.network "rm -f '/var/$1' && echo Loading... && cat /dev/stdin > '/var/$1' && echo CHMod && chmod 755 '/var/$1'"
+    cat "dist/bin/$1" | gzip -9 | ssh ubnt@camera-front-door.foxden.network "rm -f '/var/$1' && echo Loading... && cat /dev/stdin | gzip -d > '/var/$1' && echo CHMod && chmod 755 '/var/$1'"
 }
 
 copycam g4adv

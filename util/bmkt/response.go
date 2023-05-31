@@ -42,9 +42,7 @@ func (ctx *BMKTContext) handleDeleteAllProgress(progress int) {
 
 func (ctx *BMKTContext) handleFingerPresence(present bool, op string) {
 	ctx.logger.Info().Str("type", "finger_presence").Str("op", op).Bool("present", present).Send()
-	if ctx.state == IF_STATE_IDLE && !present && ctx.AutoIdentify {
-		go ctx.Identify()
-	}
+	go ctx.autoIdentify()
 }
 
 func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
@@ -123,12 +121,14 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 		ctx.lastIdentifyFinger = finger_id
 		fallthrough
 	case C.BMKT_RSP_ID_FAIL:
+		ctx.lastIdentifyResult = resp.result
 		ctx.handleResponseCode(resp, "identify")
 
 	// Op cancalltion
 	case C.BMKT_RSP_CANCEL_OP_OK:
 		fallthrough
 	case C.BMKT_RSP_CANCEL_OP_FAIL:
+		ctx.lastCancelResult = resp.result
 		ctx.handleResponseCode(resp, "cancel")
 
 	// Delete all
@@ -140,6 +140,7 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 	case C.BMKT_RSP_DEL_FULL_DB_OK:
 		fallthrough
 	case C.BMKT_RSP_DEL_FULL_DB_FAIL:
+		ctx.lastDeleteAllResult = resp.result
 		ctx.handleResponseCode(resp, "delete_all")
 
 	// Delete user/finger
@@ -148,6 +149,9 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 	case C.BMKT_RSP_DEL_USER_FP_FAIL:
 		ctx.lastDeleteUserResult = resp.result
 		ctx.handleResponseCode(resp, "delete_user")
+
+	case C.BMKT_RSP_CAPTURE_COMPLETE:
+		ctx.handleResponseCode(resp, "capture_complete")
 
 	// Unhandled
 	default:

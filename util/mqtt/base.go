@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -58,8 +59,10 @@ func (ctx *MQTTContext) makeTopic(topic string) string {
 }
 
 func (ctx *MQTTContext) Publish(topic string, msg []byte) error {
+	log.Printf("MQTT PUB %s = %s", topic, string(msg))
 	t := ctx.client.Publish(ctx.makeTopic(topic), 0, false, msg)
 	t.Wait()
+	log.Printf("MQTT POK %s = %s", topic, string(msg))
 	return t.Error()
 }
 
