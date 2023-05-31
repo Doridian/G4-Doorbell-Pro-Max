@@ -6,6 +6,10 @@ if [ "$(uname -s -m)" = "Linux aarch64" ]; then
     REAL_CC=gcc
 fi
 
+if [ "$(uname -s)" != "Linux" ]; then
+    REAL_CC=invalid-gcc-doesnt-exist
+fi
+
 if command -v "$REAL_CC" >/dev/null 2>/dev/null; then
     echo 'Found required GCC locally, using it...'
     ./local_build.sh

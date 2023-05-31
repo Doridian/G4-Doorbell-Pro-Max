@@ -20,10 +20,6 @@ export CC_FOR_TARGET="$REAL_CC"
 export CFLAGS="-g -O2 '-I${SRCDIR}/include'"
 export LDFLAGS="$CFLAGS '-L${SRCDIR}/dist/lib' '${SRCDIR}/dist/lib/libc.so.6' '${SRCDIR}/dist/lib/ld-linux-aarch64.so.1' '${SRCDIR}/dist/lib/libpthread.so.0'"
 
-runcc() {
-    $CC_FOR_TARGET -Wall -Werror -nodefaultlibs $LDFLAGS "$@" -fno-stack-protector
-}
-
 export CGO_CFLAGS="$CFLAGS"
 export CGO_LDFLAGS="$LDFLAGS"
 export GOOS=linux
