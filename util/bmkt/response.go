@@ -114,7 +114,7 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 		ctx.state = IF_STATE_IDENTIFYING
 		ctx.lastIdentifyResult = -1
 		ctx.lastIdentifyFinger = -1
-		ctx.lastIdentifyUsername = ""
+		ctx.lastIdentifyUser = ""
 		ctx.logger.Info().Str("type", "sensor_ready").Str("op", "identify").Send()
 	case C.BMKT_RSP_ID_OK:
 		id_resp := (*C.bmkt_identify_resp_t)(unsafe.Pointer(&resp.response))
@@ -122,7 +122,7 @@ func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
 		user_id := convertCUserIDToString(&id_resp.user_id)
 		finger_id := int(id_resp.finger_id)
 
-		ctx.lastIdentifyUsername = user_id
+		ctx.lastIdentifyUser = user_id
 		ctx.lastIdentifyFinger = finger_id
 		fallthrough
 	case C.BMKT_RSP_ID_FAIL:

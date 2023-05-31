@@ -13,7 +13,7 @@ func (ctx *BMKTContext) Identify() (string, error) {
 
 	ctx.state = IF_STATE_IDENTIFYING
 	ctx.lastIdentifyResult = -1
-	ctx.lastIdentifyUsername = ""
+	ctx.lastIdentifyUser = ""
 
 	err = ctx.wrapAndRunWithRetry(func() C.int {
 		return C.bmkt_identify(ctx.session)
@@ -22,5 +22,10 @@ func (ctx *BMKTContext) Identify() (string, error) {
 		return "", err
 	}
 	ctx.waitForIdle()
-	return ctx.lastIdentifyUsername, wrapBMKTError(ctx.lastIdentifyResult)
+
+	if ctx.lastIdentifyResult == C.BMKT_SUCCESS && ctx.IdentifyCallback != nil {
+		go ctx.IdentifyCallback(ctx.lastIdentifyUser, ctx.lastVerifyFinger)
+	}
+
+	return ctx.lastIdentifyUser, wrapBMKTError(ctx.lastIdentifyResult)
 }

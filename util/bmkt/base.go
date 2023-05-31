@@ -14,10 +14,13 @@ import (
 var maxID uint64
 var bmktContexts = make(map[uint64]*BMKTContext)
 
+type IdentifyCallback func(user string, finger_id int)
+
 type BMKTContext struct {
-	MaxRetries   int
-	RetryDelay   time.Duration
-	AutoIdentify bool
+	MaxRetries       int
+	RetryDelay       time.Duration
+	AutoIdentify     bool
+	IdentifyCallback IdentifyCallback
 
 	id  uint64
 	cid C.uint64_t
@@ -39,9 +42,9 @@ type BMKTContext struct {
 	lastVerifyUsername string
 	lastVerifyFinger   int
 
-	lastIdentifyResult   C.int
-	lastIdentifyUsername string
-	lastIdentifyFinger   int
+	lastIdentifyResult C.int
+	lastIdentifyUser   string
+	lastIdentifyFinger int
 }
 
 func New(logger zerolog.Logger) (*BMKTContext, error) {
