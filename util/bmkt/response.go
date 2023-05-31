@@ -42,15 +42,12 @@ func (ctx *BMKTContext) handleDeleteAllProgress(progress int) {
 
 func (ctx *BMKTContext) handleFingerPresence(present bool, op string) {
 	ctx.logger.Info().Str("type", "finger_presence").Str("op", op).Bool("present", present).Send()
-	if ctx.state == IF_STATE_IDLE && ctx.AutoIdentify {
+	if ctx.state == IF_STATE_IDLE && !present && ctx.AutoIdentify {
 		go ctx.Identify()
 	}
 }
 
 func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
-	ctx.sessionLock.Lock()
-	defer ctx.sessionLock.Unlock()
-
 	switch resp.response_id {
 	// Events
 	case C.BMKT_EVT_FINGER_REPORT:
