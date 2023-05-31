@@ -11,7 +11,7 @@ RUN apt update && \
         rsync \
     && pip install ubi_reader
 
-RUN [ "$(uname -m)" = "aarch64" ] && apt install -y gcc || apt install -y gcc-aarch64-linux-gnu
+RUN [ "$(uname -m)" = "aarch64" ] && (apt install -y gcc && ln -s "$(which gcc)" /bin/gcc-aarch64-linux-gnu) || apt install -y gcc-aarch64-linux-gnu
 
 WORKDIR /fw
 COPY /docker/download.sh /docker/download.sh

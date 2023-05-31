@@ -8,9 +8,6 @@ if [ -d /fw/image/rootfs ]; then
 fi
 
 REAL_CC=aarch64-linux-gnu-gcc
-if [ "$(uname -m)" = "aarch64" ]; then
-    REAL_CC=gcc
-fi
 
 export SRCDIR="$(pwd)"
 
