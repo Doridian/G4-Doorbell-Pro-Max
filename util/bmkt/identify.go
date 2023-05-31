@@ -4,7 +4,7 @@ package bmkt
 import "C"
 import "errors"
 
-func (ctx *BMKTContext) autoIdentify() {
+func (ctx *Context) autoIdentify() {
 	if !ctx.AutoIdentify || ctx.state != IF_STATE_IDLE {
 		return
 	}
@@ -17,7 +17,7 @@ func (ctx *BMKTContext) autoIdentify() {
 	ctx.logger.Info().Bool("success", true).Str("op", "auto_identify").Str("user", user).Int("finger", finger).Send()
 }
 
-func (ctx *BMKTContext) identifyNoCancel() (string, int, error) {
+func (ctx *Context) identifyNoCancel() (string, int, error) {
 	ctx.sessionLock.Lock()
 	defer ctx.sessionLock.Unlock()
 	if ctx.state != IF_STATE_IDLE {
@@ -43,7 +43,7 @@ func (ctx *BMKTContext) identifyNoCancel() (string, int, error) {
 	return ctx.lastIdentifyUser, ctx.lastIdentifyFinger, wrapBMKTError(ctx.lastIdentifyResult)
 }
 
-func (ctx *BMKTContext) Identify() (string, int, error) {
+func (ctx *Context) Identify() (string, int, error) {
 	err := ctx.Cancel()
 	if err != nil {
 		return "", 0, err

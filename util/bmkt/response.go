@@ -21,12 +21,12 @@ const (
 	IF_STATE_INVALID       = iota
 )
 
-func (ctx *BMKTContext) handleResponseCode(resp *C.bmkt_response_t, op string) {
+func (ctx *Context) handleResponseCode(resp *C.bmkt_response_t, op string) {
 	ctx.state = IF_STATE_IDLE
 	ctx.handleResponseCodeNoIdle(resp, op)
 }
 
-func (ctx *BMKTContext) handleResponseCodeNoIdle(resp *C.bmkt_response_t, op string) {
+func (ctx *Context) handleResponseCodeNoIdle(resp *C.bmkt_response_t, op string) {
 	var evt *zerolog.Event
 	if resp.result == C.BMKT_SUCCESS {
 		evt = ctx.logger.Info().Bool("success", true)
@@ -36,20 +36,20 @@ func (ctx *BMKTContext) handleResponseCodeNoIdle(resp *C.bmkt_response_t, op str
 	evt.Str("type", "sensor_response").Str("op", op).Int("result", int(resp.result)).Send()
 }
 
-func (ctx *BMKTContext) handleEnrollProgress(progress int) {
+func (ctx *Context) handleEnrollProgress(progress int) {
 	ctx.logger.Info().Str("type", "enroll_progress").Int("progress", progress).Send()
 }
 
-func (ctx *BMKTContext) handleDeleteAllProgress(progress int) {
+func (ctx *Context) handleDeleteAllProgress(progress int) {
 	ctx.logger.Info().Str("type", "delete_all_progress").Int("progress", progress).Send()
 }
 
-func (ctx *BMKTContext) handleFingerPresence(present bool, op string) {
+func (ctx *Context) handleFingerPresence(present bool, op string) {
 	ctx.logger.Info().Str("type", "finger_presence").Str("op", op).Bool("present", present).Send()
 	go ctx.autoIdentify()
 }
 
-func (ctx *BMKTContext) handleResponse(resp *C.bmkt_response_t) {
+func (ctx *Context) handleResponse(resp *C.bmkt_response_t) {
 	switch resp.response_id {
 	// Events
 	case C.BMKT_EVT_FINGER_REPORT:

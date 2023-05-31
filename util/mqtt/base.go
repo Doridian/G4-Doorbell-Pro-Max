@@ -8,14 +8,14 @@ import (
 	paho "github.com/eclipse/paho.mqtt.golang"
 )
 
-type MQTTContext struct {
+type Client struct {
 	client      paho.Client
 	topicPrefix string
 }
 
-type MQTTHandler func(msg []byte)
+type SubscribeHandler func(msg []byte)
 
-func New(host string, username string, password string, topicPrefix string) (*MQTTContext, error) {
+func New(host string, username string, password string, topicPrefix string) (*Client, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -38,13 +38,13 @@ func New(host string, username string, password string, topicPrefix string) (*MQ
 		return nil, err
 	}
 
-	return &MQTTContext{
+	return &Client{
 		client:      client,
 		topicPrefix: topicPrefix,
 	}, nil
 }
 
-func (ctx *MQTTContext) Close() {
+func (ctx *Client) Close() {
 	client := ctx.client
 	ctx.client = nil
 	if client == nil {
@@ -53,17 +53,17 @@ func (ctx *MQTTContext) Close() {
 	client.Disconnect(1000)
 }
 
-func (ctx *MQTTContext) makeTopic(topic string) string {
+func (ctx *Client) makeTopic(topic string) string {
 	return ctx.topicPrefix + topic
 }
 
-func (ctx *MQTTContext) Publish(topic string, msg []byte) error {
+func (ctx *Client) Publish(topic string, msg []byte) error {
 	t := ctx.client.Publish(ctx.makeTopic(topic), 0, false, msg)
 	t.Wait()
 	return t.Error()
 }
 
-func (ctx *MQTTContext) Subscribe(topic string, callback MQTTHandler) error {
+func (ctx *Client) Subscribe(topic string, callback SubscribeHandler) error {
 	pahoHandler := func(clt paho.Client, msg paho.Message) {
 		callback(msg.Payload())
 		msg.Ack()

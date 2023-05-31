@@ -4,7 +4,7 @@ package bmkt
 import "C"
 import "errors"
 
-func (ctx *BMKTContext) Enroll(username string, finger_id int) error {
+func (ctx *Context) Enroll(username string, finger_id int) error {
 	c_username, c_username_len := convertStringToCUserID(username)
 	c_finger_id := C.uint8_t(finger_id)
 
@@ -31,7 +31,7 @@ func (ctx *BMKTContext) Enroll(username string, finger_id int) error {
 	return wrapBMKTError(ctx.lastEnrollResult)
 }
 
-func (ctx *BMKTContext) DeleteEnrollment(username string, finger_id int) error {
+func (ctx *Context) DeleteEnrollment(username string, finger_id int) error {
 	c_username, c_username_len := convertStringToCUserID(username)
 	c_finger_id := C.uint8_t(finger_id)
 

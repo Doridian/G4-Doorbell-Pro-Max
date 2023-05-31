@@ -21,7 +21,7 @@ func convertStringToCUserID(username string) (*C.uint8_t, C.uint32_t) {
 	return c_username, c_username_len
 }
 
-func (ctx *BMKTContext) Cancel() error {
+func (ctx *Context) Cancel() error {
 	if ctx.state == IF_STATE_IDLE || ctx.state == IF_STATE_INIT {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (ctx *BMKTContext) Cancel() error {
 	return wrapBMKTError(ctx.lastCancelResult)
 }
 
-func (ctx *BMKTContext) waitForIdle() {
+func (ctx *Context) waitForIdle() {
 	for ctx.state != IF_STATE_IDLE {
 		time.Sleep(time.Microsecond * 100)
 	}

@@ -12,11 +12,11 @@ import (
 )
 
 var maxID uint64
-var bmktContexts = make(map[uint64]*BMKTContext)
+var bmktContexts = make(map[uint64]*Context)
 
 type IdentifyCallback func(user string, finger_id int)
 
-type BMKTContext struct {
+type Context struct {
 	MaxRetries       int
 	RetryDelay       time.Duration
 	AutoIdentify     bool
@@ -47,9 +47,9 @@ type BMKTContext struct {
 	lastIdentifyFinger int
 }
 
-func New(logger zerolog.Logger) (*BMKTContext, error) {
+func New(logger zerolog.Logger) (*Context, error) {
 	id := atomic.AddUint64(&maxID, 1)
-	ctx := &BMKTContext{
+	ctx := &Context{
 		MaxRetries:   3,
 		RetryDelay:   time.Millisecond * 1,
 		AutoIdentify: true,
@@ -88,7 +88,7 @@ func New(logger zerolog.Logger) (*BMKTContext, error) {
 	return ctx, nil
 }
 
-func (ctx *BMKTContext) Open() error {
+func (ctx *Context) Open() error {
 	ctx.sessionLock.Lock()
 	defer ctx.sessionLock.Unlock()
 
@@ -99,7 +99,7 @@ func (ctx *BMKTContext) Open() error {
 	return err
 }
 
-func (ctx *BMKTContext) Close() {
+func (ctx *Context) Close() {
 	delete(bmktContexts, ctx.id)
 	if ctx.session == nil {
 		return

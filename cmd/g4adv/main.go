@@ -10,9 +10,9 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var mqttClient *mqtt.MQTTContext
+var mqttClient *mqtt.Client
 var logger zerolog.Logger
-var bmktCtx *bmkt.BMKTContext
+var bmktCtx *bmkt.Context
 
 func main() {
 	os.Setenv("TZ", "Etc/UTC")

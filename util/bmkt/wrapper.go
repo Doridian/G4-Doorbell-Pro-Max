@@ -40,7 +40,7 @@ func wrapBMKTError(err C.int) error {
 	return fmt.Errorf("code %d error", int(err))
 }
 
-func (ctx *BMKTContext) wrapAndRunWithRetry(runfunc runnable) error {
+func (ctx *Context) wrapAndRunWithRetry(runfunc runnable) error {
 	for curRetry := 0; curRetry < ctx.MaxRetries; curRetry++ {
 		res := runfunc()
 		if res == C.BMKT_SUCCESS {
@@ -54,7 +54,7 @@ func (ctx *BMKTContext) wrapAndRunWithRetry(runfunc runnable) error {
 	return errors.New("retries exhausted")
 }
 
-func (ctx *BMKTContext) wrappedOpen() error {
+func (ctx *Context) wrappedOpen() error {
 	bmktContexts[ctx.id] = ctx
 	ctx.session = C.bmkt_wrapped_init()
 	if ctx.session == nil {
