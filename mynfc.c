@@ -6,9 +6,9 @@
 
 static unsigned char discoveryTechnologies[] = {
     MODE_POLL | TECH_PASSIVE_NFCA,
-    MODE_POLL | TECH_PASSIVE_NFCF,
-    MODE_POLL | TECH_PASSIVE_NFCB,
-    MODE_POLL | TECH_PASSIVE_15693,
+    //MODE_POLL | TECH_PASSIVE_NFCF,
+    //MODE_POLL | TECH_PASSIVE_NFCB,
+    //MODE_POLL | TECH_PASSIVE_15693,
 };
 
 #define NFC_WRAP(FUNC) if (FUNC == NFC_ERROR) { \
