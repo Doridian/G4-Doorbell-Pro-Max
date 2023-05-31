@@ -12,19 +12,19 @@
 *                          arising from its use.
 */
 
-#include <NfcLibrary/inc/Nfc.h>
+#include <NfcLibrary/Nfc.h>
 
 #ifdef CARDEMU_SUPPORT
-#include <NfcLibrary/NdefLibrary/inc/T4T_NDEF_emu.h>
+#include <NfcLibrary/NdefLibrary/T4T_NDEF_emu.h>
 #endif
 
 #ifdef P2P_SUPPORT
-#include <NfcLibrary/NdefLibrary/inc/P2P_NDEF.h>
+#include <NfcLibrary/NdefLibrary/P2P_NDEF.h>
 #endif
 
 #ifdef RW_SUPPORT
-#include <NfcLibrary/NdefLibrary/inc/RW_NDEF.h>
-#include <NfcLibrary/NdefLibrary/inc/RW_NDEF_T3T.h>
+#include <NfcLibrary/NdefLibrary/RW_NDEF.h>
+#include <NfcLibrary/NdefLibrary/RW_NDEF_T3T.h>
 #endif
 
 #define NXPNCI_SUCCESS      NFC_SUCCESS
